@@ -17,8 +17,8 @@ ifndef PRODUCT
 PRODUCT    = DEFAULT
 endif
 
-include product_$(PRODUCT).mak
-include config_isp.mak
+include projects/product_$(PRODUCT).mak
+include projects/isp_$(PRODUCT).mak
 
 # --MAP-- map the MCU_TARGET to an avr-dude target
 ifeq ($(MCU_TARGET),atmega8)
@@ -112,8 +112,8 @@ $(PROGRAM).elf: $(OBJ)
 ifdef USE_CONFIG_H
 $(PROGRAM).o:	$(PROGRAM).c config.h
 
-config.h:	config_$(PRODUCT).h
-		cp config_$(PRODUCT).h config.h
+config.h:	projects/config_$(PRODUCT).h
+		cp projects/config_$(PRODUCT).h config.h
 endif
 
 clean:

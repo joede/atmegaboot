@@ -9,9 +9,9 @@ changed the code to make it easier to configure and to match my requirements.
 This code is a first try and I don't know if it is the last one. ;-)
 
 To add support for a new product, copy the product_TEMPLATE.mak to a new file
-and replace "TEMPLATE" with a unique shortcut for the products name. CHange
-the file to fit your need. If necessary, copy config_TEMPLATE.h and replace
-"TEMPLATE" with the same shortcut.
+and replace "TEMPLATE" with a unique shortcut for the products name. Change
+the file to fit your need. If necessary, copy config_TEMPLATE.h and 
+isp_TEMPLATE.mak and replace "TEMPLATE" with the same shortcut.
 
 Attention: be very carefull while editing the fuses in product_TEMPLATE.mak!
 It is possible to damage your MCU!
@@ -24,9 +24,11 @@ Note: to configure the ISP settings, just edit config_isp.mak!
 
 So a sample session for a product "FOO" could look like this:
 
-   $ cp product_TEMPLATE.mak product_FOO.mak
+   $ cp product_TEMPLATE.mak projects/product_FOO.mak
    $ emacs product_FOO.mak
-   $ cp config_TEMPLATE.h config_FOO.h
+   $ cp isp_TEMPLATE.mak projects/isp_FOO.mak
+   $ emacs isp_FOO.mak
+   $ cp config_TEMPLATE.h projects/config_FOO.h
    $ emacs config_FOO.h
    $ make PRODUCT=FOO
    $ ls -1 ATmegaBOOT_FOO*
@@ -39,4 +41,3 @@ Have fun.
 
 --
 jdesch@users.berlios.de
-http://ezrobi.berlios.de/
