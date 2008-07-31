@@ -22,7 +22,7 @@ Intel-Hex and Motorola-SRecord).
 
 Note: to configure the ISP settings, just edit config_isp.mak!
 
-So a sample session for a product "FOO" could look like this:
+So the first steps for a product "FOO" could look like this:
 
    $ cp product_TEMPLATE.mak projects/product_FOO.mak
    $ emacs product_FOO.mak

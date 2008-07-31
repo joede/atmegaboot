@@ -11,6 +11,12 @@
 |                    Copyright (c) Dipl.-Ing. J. Desch                    |
 +=========================================================================+
 
+2008/7/31 - jd
+
+ * added configurable "quit behaviour"
+ 
+ * minor changes to the makefiles
+
 2008/7/29 - jd
 
  * made the codebase more configurable.

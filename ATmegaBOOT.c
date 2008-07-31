@@ -6,8 +6,8 @@
 /*                                                        */
 /* ATmegaBOOT.c                                           */
 /*                                                        */
-/* build: 050815                                          */
-/* date : 15.08.2005                                      */
+/* build: 080731                                          */
+/* date : 31.07.2008                                      */
 /*                                                        */
 /* 2008/6/29 jdesch@users.berlios.de                      */
 /* Added additional configuration of port setup and more. */
