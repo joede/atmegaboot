@@ -20,8 +20,18 @@ endif
 include product_$(PRODUCT).mak
 include config_isp.mak
 
-
-
+# --MAP-- map the MCU_TARGET to an avr-dude target
+ifeq ($(MCU_TARGET),atmega8)
+    ISP_TARGET=m8
+else ifeq ($(MCU_TARGET),atmega168)
+    ISP_TARGET=m168
+else ifeq ($(MCU_TARGET),atmega32)
+    ISP_TARGET=m32
+else ifeq ($(MCU_TARGET),atmega128)
+    ISP_TARGET=m128
+else ifeq ($(MCU_TARGET),atmega2560)
+    ISP_TARGET=m2560
+endif
 
 LDSECTION  = --section-start=.text=$(BOOT_START)
 ISPFUSES   = avrdude -c $(ISPTOOL) -p $(ISP_TARGET) -P $(ISPPORT) $(ISPSPEED) -u -U efuse:w:$(ISP_EFUSE):m -U hfuse:w:$(ISP_HFUSE):m -U lfuse:w:$(ISP_LFUSE):m
@@ -67,21 +77,30 @@ all: checking $(PROGRAM).elf lst text
 
 checking:
 ifndef ISP_EFUSE
-	echo "error: ISP_EFUSE undefined"
+	@echo "error: ISP_EFUSE undefined"
+	@exit 1
 endif
 ifndef ISP_HFUSE
-	echo "error: ISP_HFUSE undefined"
+	@echo "error: ISP_HFUSE undefined"
+	@exit 1
 endif
 ifndef ISP_LFUSE
-	echo "error: ISP_LFUSE undefined"
+	@echo "error: ISP_LFUSE undefined"
+	@exit 1
 endif
 ifndef ISP_TARGET
-	echo "error: ISP_TARGET undefined"
+	@echo "error: ISP_TARGET undefined"
+	@exit 1
 endif
 ifndef MCU_TARGET
-	echo "error: MCU_TARGET undefined"
+	@echo "error: MCU_TARGET undefined"
+	@exit 1
 endif
-	echo "checking done..."
+ifndef ISP_TARGET
+	@echo "error: ISP_TARGET undefined. Add it to this Makefile (see --MAP--)"
+	@exit 1
+endif
+	@echo "checking done..."
 
 isp: $(PROGRAM).hex
 	$(ISPFUSES)

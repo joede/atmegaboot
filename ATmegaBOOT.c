@@ -181,6 +181,9 @@ void nothing_response(void);
 char gethex(void);
 void puthex(char);
 void flash_led(uint8_t);
+#ifdef WANT_WAIT_BL
+void wait_bl_pin(void);
+#endif
 
 /* some variables */
 union address_union {
@@ -216,6 +219,11 @@ int main(void)
     uint16_t w;
 
     asm volatile("nop\n\t");
+#ifdef HANDLE_WDT_RESET
+    if ( MCUSR & _BV(WDRF) )
+	app_start();
+#endif
+    wdt_disable();
     cli();
 
     /* optionally setup the CPU ports
@@ -393,6 +401,13 @@ int main(void)
 	/* Leave programming mode  */
 	else if(ch=='Q') {
 	    nothing_response();
+#ifdef WANT_WAIT_BL
+	    wait_bl_pin();
+#endif
+	    flash_led(4);
+#ifdef WANT_START_APP
+	    app_start();
+#endif
 	}
 
 
@@ -916,20 +931,33 @@ void nothing_response(void)
  */
 void flash_led(uint8_t count)
 {
-    uint32_t l;
-    uint8_t i;
+    volatile uint32_t l;		/* fool the optimizer */
 
-    if (count == 0) {
+    if (count == 0) 
       count = 3;
-    }
-    
-    for (i = 0; i < count; ++i) {
-	LED_PORT &= ~_BV(LED);
-	for(l = 0; l < (F_CPU); ++l);
+    do
+    {
 	LED_PORT |= _BV(LED);
-	for(l = 0; l < (F_CPU); ++l);
-    }
+	for(l = 0; l < (F_CPU/500); ++l);
+	LED_PORT &= ~_BV(LED);
+	for(l = 0; l < (F_CPU/800); ++l);
+    } while (--count);
 }
 
+
+#ifdef WANT_WAIT_BL
+void wait_bl_pin (void)
+{
+    volatile uint32_t l;		/* fool the optimizer */
+    do
+    {
+	LED_PORT |= _BV(LED);
+	for(l = 0; l < (F_CPU/200); ++l);
+	LED_PORT &= ~_BV(LED);
+	for(l = 0; l < (F_CPU/200); ++l);
+    } while ( !bit_is_set(BL_PIN, BL) );
+    for(l = 0; l < (F_CPU/200); ++l);
+}
+#endif
 
 /* ==[End of file]========================================================== */

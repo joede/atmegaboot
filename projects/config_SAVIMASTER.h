@@ -30,7 +30,7 @@
 /* ===== Configure Monitor Welcome =====
  * Uncomment to define the welcome message of the Monitor.
  */
-/* #define WELCOME_MSG "MegaBOOT Monitor\r\n" */
+#define WELCOME_MSG "SaVi.MASTER Monitor\r\n"
 
 
 
@@ -39,9 +39,9 @@
  * of the output which enables (with 1) the RS485 transmitter. If you don't use a
  * RS485, comment out these three lines.
  */
-/* #define RS485_TXON  PINE2 */
-/* #define RS485_DDR   DDRE */
-/* #define RS485_PORT  PORTE */
+#define RS485_TXON  PINE2
+#define RS485_DDR   DDRE
+#define RS485_PORT  PORTE
 
 
 
@@ -73,7 +73,7 @@
  *
  */
 //#define WANT_WAIT_BL 1
-//#define WANT_START_APP 1
+#define WANT_START_APP 1
 
 
 /* ===== Configuration of the port of the MCU =====
