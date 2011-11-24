@@ -6,10 +6,15 @@
 /*                                                        */
 /* ATmegaBOOT.c                                           */
 /*                                                        */
-/* build: 080731                                          */
-/* date : 31.07.2008                                      */
+/* build: 111124                                          */
+/* date : 24.11.2011                                      */
+/* ------------------------------------------------------ */
 /*                                                        */
-/* 2008/6/29 jdesch@users.berlios.de                      */
+/* 2011/11/24 jd@voelker-web.de                           */
+/* SW_MINOR changed from 0x0F to 0x10. Added support for  */
+/* m324p, m644, m644p.                                    */
+/*                                                        */
+/* 2008/6/29 jd@voelker-web.de                            */
 /* Added additional configuration of port setup and more. */
 /* The code now uses an optional config.h                 */
 /*                                                        */
@@ -94,7 +99,7 @@
  */
 #define HW_VER	 0x02
 #define SW_MAJOR 0x01
-#define SW_MINOR 0x0f
+#define SW_MINOR 0x10
 
 
 /* monitor functions will only be compiled when using ATmega128, due to
@@ -119,10 +124,25 @@
 #define SIG3	0x02
 #define PAGE_SIZE	0x80U	//128 words
 
+#elif defined __AVR_ATmega644P__
+#define SIG2	0x96
+#define SIG3	0x0A
+#define PAGE_SIZE	0x80U   //128 words
+
+#elif defined __AVR_ATmega644__
+#define SIG2	0x96
+#define SIG3	0x09
+#define PAGE_SIZE	0x80U   //128 words
+
 #elif defined __AVR_ATmega32__
 #define SIG2	0x95
 #define SIG3	0x02
 #define PAGE_SIZE	0x40U	//64 words
+
+#elif defined __AVR_ATmega324P__
+#define SIG2	0x95
+#define SIG3	0x08
+#define PAGE_SIZE	0x80U   //128 words
 
 #elif defined __AVR_ATmega16__
 #define SIG2	0x94
@@ -204,11 +224,17 @@ struct flags_struct {
 uint8_t buff[256];
 uint8_t address_high;
 
-uint8_t pagesz=0x80;
+// TODO: not used!?
+// uint8_t pagesz=0x80;
 
 uint8_t i;
 uint8_t bootuart = 0;
 
+/* Entry point of the application. Another way may be the 
+ * autoreset via watchdog (sneaky!) BBR/LF 9/13/2008
+ * WDTCSR = _BV(WDE);
+ * while (1); // 16 ms
+ */
 void (*app_start)(void) = 0x0000;
 
 
@@ -303,7 +329,7 @@ int main(void)
     UBRRHI = (uint8_t)(w>>8);
     UCSRA = 0x00;
     UCSRB = _BV(TXEN)|_BV(RXEN);
-#elif defined __AVR_ATmega168__
+#elif defined __AVR_ATmega168__ || __AVR_ATmega644P__ || __AVR_ATmega644__ || __AVR_ATmega324P__
     UBRR0L = (uint8_t)(w&0x00FF);
     UBRR0H = (uint8_t)(w>>8);
     UCSR0B = (1<<RXEN0) | (1<<TXEN0);
@@ -563,7 +589,7 @@ int main(void)
 				 "rjmp	write_page	\n\t"
 				 "block_done:		\n\t"
 				 "clr	__zero_reg__	\n\t"	//restore zero register
-#if defined __AVR_ATmega168__
+#if defined __AVR_ATmega168__  || __AVR_ATmega328P__ || __AVR_ATmega128__ || __AVR_ATmega1280__ || __AVR_ATmega1281__ || __AVR_ATmega1284P__ || __AVR_ATmega644P__ || __AVR_ATmega644__ || __AVR_ATmega324P__
 				 : "=m" (SPMCSR) : "M" (PAGE_SIZE) : "r0","r16","r17","r24","r25","r28","r29","r30","r31"
 #else
 				 : "=m" (SPMCR) : "M" (PAGE_SIZE) : "r0","r16","r17","r24","r25","r28","r29","r30","r31"
@@ -595,7 +621,7 @@ int main(void)
 		putch(0x14);
 		for (w=0;w < length.word;w++) {		        // Can handle odd and even lengths okay
 		    if (flags.eeprom) {	                        // Byte access EEPROM read
-#ifdef __AVR_ATmega168__
+#ifdef __AVR_ATmega168__ || __AVR_ATmega328P__ || __AVR_ATmega644P__ || __AVR_ATmega644__ || __AVR_ATmega324P__
 			while(EECR & (1<<EEPE));
 			EEAR = (uint16_t)(void *)address.word;
 			EECR |= (1<<EERE);

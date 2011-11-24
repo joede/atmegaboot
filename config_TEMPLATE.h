@@ -67,7 +67,7 @@
  * the hardware to start the application.
  *
  * There are two different ways to handle this. Uncomment WANT_START_APP if the
- * application should be started right after the quit. Additionally, uUncomment
+ * application should be started right after the quit. Additionally, uncomment
  * WANT_WAIT_BL to wait with the automatic start of the application, until the
  * BL_PIN is high again! So WANT_WAIT_BL alone doesn't make sense.
  *
@@ -116,7 +116,7 @@
 /* #define INIT_PORT_H */
 /* #define DIR_PORT_H  BIN2BYTE(00000000) */
 /* #define VAL_PORT_H  BIN2BYTE(11111111) */
-				      
+
 
 
 /* ==[End of file]========================================================== */

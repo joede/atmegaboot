@@ -4,12 +4,18 @@
 +=========================================================================+
 
                   Project: ATmegaBOOT
-                   Author: J. Desch <jdesch@users.berlios.de> (currently)
+                   Author: (changes by) J. Desch <jd@voelker-web.de>
           Current Release: --
 
 +=========================================================================+
 |                    Copyright (c) Dipl.-Ing. J. Desch                    |
 +=========================================================================+
+
+2011/11/24 - jd
+
+ * added support for m664, m644p and m324p
+ 
+ * changed the SW_MINOR release of the firmware from 0x0F to 0x10.
 
 2008/7/31 - jd
 
