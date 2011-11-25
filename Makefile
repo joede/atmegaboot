@@ -27,6 +27,12 @@ else ifeq ($(MCU_TARGET),atmega168)
     ISP_TARGET=m168
 else ifeq ($(MCU_TARGET),atmega32)
     ISP_TARGET=m32
+else ifeq ($(MCU_TARGET),atmega324p)
+    ISP_TARGET=m324p
+else ifeq ($(MCU_TARGET),atmega644)
+    ISP_TARGET=m644
+else ifeq ($(MCU_TARGET),atmega644p)
+    ISP_TARGET=m644p
 else ifeq ($(MCU_TARGET),atmega128)
     ISP_TARGET=m128
 else ifeq ($(MCU_TARGET),atmega2560)
@@ -49,14 +55,19 @@ ifdef WELCOME_MSG
 DEFS  += '-DWELCOME_MSG=$(WELCOME_MSG)'
 endif
 DEFS  += "-DUSE_MONITOR=$(USE_MONITOR)"
+ifdef BAUDRATE
+DEFS  += "-DBAUD_RATE=$(BAUDRATE)"
+endif
 DEFS  += "-DLED_DDR=$(LED_DDR)"
 DEFS  += "-DLED_PORT=$(LED_PORT)"
 DEFS  += "-DLED_PIN=$(LED_PIN)"
 DEFS  += "-DLED=$(LED)"
+ifdef BL_PIN
 DEFS  += "-DBL_DDR=$(BL_DDR)"
 DEFS  += "-DBL_PORT=$(BL_PORT)"
 DEFS  += "-DBL_PIN=$(BL_PIN)"
 DEFS  += "-DBL=$(BL)"
+endif
 
 LIBS       =
 

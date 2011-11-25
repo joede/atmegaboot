@@ -13,14 +13,18 @@
 
 2011/11/24 - jd
 
- * added support for m664, m644p and m324p
- 
+ * added support for m664, m644p and m324p with support for both uarts.
+
  * changed the SW_MINOR release of the firmware from 0x0F to 0x10.
+
+ * if BL_PIN isn't defined, the pin isn't used. This means, the bootloader is
+   allways entered. This is done to support starting the bootloader only from
+   within the app.
 
 2008/7/31 - jd
 
  * added configurable "quit behaviour"
- 
+
  * minor changes to the makefiles
 
 2008/7/29 - jd
@@ -28,7 +32,7 @@
  * made the codebase more configurable.
 
  * add support for RS485 transceiver Rx/Tx switching
- 
+
 
 +=========================================================================+
 | END OF FILE                                                             |

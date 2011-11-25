@@ -106,88 +106,93 @@
  * bootblock size constraints
  */
 #if USE_MONITOR
-#define MONITOR
+#  define MONITOR
 #endif
 
 
-/* define various device id's */
-/* manufacturer byte is always the same */
-#define SIG1	0x1E	// Yep, Atmel is the only manufacturer of AVR micros.  Single source :(
+/* define various device id's and there page sizes.
+ * The manufacturer byte is always the same...
+ * Yep, Atmel is the only manufacturer of AVR micros.  Single source :(
+ */
+#define SIG1	0x1E
 
 #if defined __AVR_ATmega128__
-#define SIG2	0x97
-#define SIG3	0x02
-#define PAGE_SIZE	0x80U	//128 words
+  #define SIG2	0x97
+  #define SIG3	0x02
+  #define PAGE_SIZE	0x80U	//128 words
 
 #elif defined __AVR_ATmega64__
-#define SIG2	0x96
-#define SIG3	0x02
-#define PAGE_SIZE	0x80U	//128 words
+  #define SIG2	0x96
+  #define SIG3	0x02
+  #define PAGE_SIZE	0x80U	//128 words
 
 #elif defined __AVR_ATmega644P__
-#define SIG2	0x96
-#define SIG3	0x0A
-#define PAGE_SIZE	0x80U   //128 words
+  #define SIG2	0x96
+  #define SIG3	0x0A
+  #define PAGE_SIZE	0x80U   //128 words
 
 #elif defined __AVR_ATmega644__
-#define SIG2	0x96
-#define SIG3	0x09
-#define PAGE_SIZE	0x80U   //128 words
+  #define SIG2	0x96
+  #define SIG3	0x09
+  #define PAGE_SIZE	0x80U   //128 words
 
 #elif defined __AVR_ATmega32__
-#define SIG2	0x95
-#define SIG3	0x02
-#define PAGE_SIZE	0x40U	//64 words
+  #define SIG2	0x95
+  #define SIG3	0x02
+  #define PAGE_SIZE	0x40U	//64 words
 
 #elif defined __AVR_ATmega324P__
-#define SIG2	0x95
-#define SIG3	0x08
-#define PAGE_SIZE	0x80U   //128 words
+  #define SIG2	0x95
+  #define SIG3	0x08
+  #define PAGE_SIZE	0x80U   //128 words
 
 #elif defined __AVR_ATmega16__
-#define SIG2	0x94
-#define SIG3	0x03
-#define PAGE_SIZE	0x40U	//64 words
+  #define SIG2	0x94
+  #define SIG3	0x03
+  #define PAGE_SIZE	0x40U	//64 words
 
 #elif defined __AVR_ATmega8__
-#define SIG2	0x93
-#define SIG3	0x07
-#define PAGE_SIZE	0x20U	//32 words
+  #define SIG2	0x93
+  #define SIG3	0x07
+  #define PAGE_SIZE	0x20U	//32 words
 
 #elif defined __AVR_ATmega88__
-#define SIG2	0x93
-#define SIG3	0x0a
-#define PAGE_SIZE	0x20U	//32 words
+  #define SIG2	0x93
+  #define SIG3	0x0a
+  #define PAGE_SIZE	0x20U	//32 words
 
 #elif defined __AVR_ATmega168__
-#define SIG2	0x94
-#define SIG3	0x06
-#define PAGE_SIZE	0x40U	//64 words
+  #define SIG2	0x94
+  #define SIG3	0x06
+  #define PAGE_SIZE	0x40U	//64 words
 
 #elif defined __AVR_ATmega162__
-#define SIG2	0x94
-#define SIG3	0x04
-#define PAGE_SIZE	0x40U	//64 words
+  #define SIG2	0x94
+  #define SIG3	0x04
+  #define PAGE_SIZE	0x40U	//64 words
 
 #elif defined __AVR_ATmega163__
-#define SIG2	0x94
-#define SIG3	0x02
-#define PAGE_SIZE	0x40U	//64 words
+  #define SIG2	0x94
+  #define SIG3	0x02
+  #define PAGE_SIZE	0x40U	//64 words
 
 #elif defined __AVR_ATmega169__
-#define SIG2	0x94
-#define SIG3	0x05
-#define PAGE_SIZE	0x40U	//64 words
+  #define SIG2	0x94
+  #define SIG3	0x05
+  #define PAGE_SIZE	0x40U	//64 words
 
 #elif defined __AVR_ATmega8515__
-#define SIG2	0x93
-#define SIG3	0x06
-#define PAGE_SIZE	0x20U	//32 words
+  #define SIG2	0x93
+  #define SIG3	0x06
+  #define PAGE_SIZE	0x20U	//32 words
 
 #elif defined __AVR_ATmega8535__
-#define SIG2	0x93
-#define SIG3	0x08
-#define PAGE_SIZE	0x20U	//32 words
+  #define SIG2	0x93
+  #define SIG3	0x08
+  #define PAGE_SIZE	0x20U	//32 words
+
+#else
+  #error "error: unknown target!"
 #endif
 
 
@@ -230,7 +235,7 @@ uint8_t address_high;
 uint8_t i;
 uint8_t bootuart = 0;
 
-/* Entry point of the application. Another way may be the 
+/* Entry point of the application. Another way may be the
  * autoreset via watchdog (sneaky!) BBR/LF 9/13/2008
  * WDTCSR = _BV(WDE);
  * while (1); // 16 ms
@@ -282,8 +287,10 @@ int main(void)
 
     /* set pin direction for bootloader pin and enable pullup
      */
+#ifdef BL_PIN
     BL_DDR &= ~_BV(BL);
     BL_PORT |= _BV(BL);
+#endif
 
 #ifdef RS485_TXON
     RS485_DDR |= _BV(RS485_TXON);
@@ -291,6 +298,7 @@ int main(void)
 #endif
 
     /* check if flash is programmed already, if not start bootloader anyway */
+#ifdef BL_PIN
     if ( pgm_read_byte_near(0x0000) != 0xFF )
     {
 
@@ -299,6 +307,7 @@ int main(void)
           app_start();
         }
     }
+#endif
 
     /* initialize UART(s) depending on CPU defined */
 #ifdef USE_UART
@@ -309,7 +318,7 @@ int main(void)
 
     w = (uint16_t)((F_CPU / ((BAUD_RATE)<<3) + 1UL) / 2UL) - 1;
 
-#if defined __AVR_ATmega128__
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
     if ( bootuart == 0 ) {
 	UBRR0L = (uint8_t)(w&0x00FF);
 	UBRR0H = (uint8_t)(w>>8);
@@ -329,11 +338,6 @@ int main(void)
     UBRRHI = (uint8_t)(w>>8);
     UCSRA = 0x00;
     UCSRB = _BV(TXEN)|_BV(RXEN);
-#elif defined __AVR_ATmega168__ || __AVR_ATmega644P__ || __AVR_ATmega644__ || __AVR_ATmega324P__
-    UBRR0L = (uint8_t)(w&0x00FF);
-    UBRR0H = (uint8_t)(w>>8);
-    UCSR0B = (1<<RXEN0) | (1<<TXEN0);
-    UCSR0C = (1<<UCSZ00) | (1<<UCSZ01);
 #else
     /* m8,m16,m32,m169,m8515,m8535 */
     UBRRL = (uint8_t)(w&0x00FF);
@@ -351,6 +355,15 @@ int main(void)
     flash_led(3);
 
     putch('\0');
+
+#if 0
+    // simple "hello" for debugging...
+    putch('U');
+    putch('U');
+    putch('U');
+    putch('U');
+    putch('U');
+#endif
 
     /* forever loop */
     for (;;) {
@@ -621,7 +634,7 @@ int main(void)
 		putch(0x14);
 		for (w=0;w < length.word;w++) {		        // Can handle odd and even lengths okay
 		    if (flags.eeprom) {	                        // Byte access EEPROM read
-#ifdef __AVR_ATmega168__ || __AVR_ATmega328P__ || __AVR_ATmega644P__ || __AVR_ATmega644__ || __AVR_ATmega324P__
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
 			while(EECR & (1<<EEPE));
 			EEAR = (uint16_t)(void *)address.word;
 			EECR |= (1<<EERE);
@@ -731,17 +744,18 @@ int main(void)
 			    ch = getch(); putch(ch);
 			    ch = gethex();
 			    *(uint8_t *)((addrh << 8) + addrl) = ch;
-
 			}
 
 			/* dump bootloader pin to check it */
                         else if (ch == 'p') {
+#ifdef BL_PIN
 			    putsP(PSTR("BL="));
 			    if(bit_is_set(BL_PIN, BL)) {
 				putch('1');
 			    } else {
 				putch('0');
 			    }
+#endif
                         }
 
 			/* read from uart and echo back */
@@ -842,53 +856,45 @@ void putch(char ch)
     RS485_PORT |= _BV(RS485_TXON);	     /* enable RS485 transmitter */
 #endif
 
-#ifdef __AVR_ATmega128__
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
     if(bootuart == 0) {
 	while (!(UCSR0A & _BV(UDRE0)));
 	UDR0 = ch;
-#ifdef RS485_TXON
+	#ifdef RS485_TXON
 	while (!(UCSR0A & _BV(UDRE0)));
 	while (!(UCSR0A & _BV(TXC0)));
 	UCSR0A |= _BV(TXC0);
-#endif
+	#endif
     }
     else if (bootuart == 1) {
 	while (!(UCSR1A & _BV(UDRE1)));
 	UDR1 = ch;
-#ifdef RS485_TXON
+	#ifdef RS485_TXON
 	while (!(UCSR1A & _BV(UDRE1)));
 	while (!(UCSR1A & _BV(TXC1)));
-	UCSR0A |= _BV(TXC1);
-#endif
+	UCSR1A |= _BV(TXC1);
+	#endif
     }
-#elif defined __AVR_ATmega168__
-    while (!(UCSR0A & _BV(UDRE0)));
-    UDR0 = ch;
-#ifdef RS485_TXON
-    while (!(UCSR0A & _BV(UDRE0)));
-    while (!(UCSR0A & _BV(TXC0)));
-    UCSR0A |= _BV(TXC0);
-#endif
 #else
     /* m8,16,32,169,8515,8535,163 */
     while (!(UCSRA & _BV(UDRE)));
     UDR = ch;
-#ifdef RS485_TXON
+    #ifdef RS485_TXON
     while (!(UCSRA & _BV(UDRE)));
     while (!(UCSRA & _BV(TXC)));
     UCSRA |= _BV(TXC);
-#endif
+    #endif
 #endif
 
-#ifdef RS485_TXON
+    #ifdef RS485_TXON
     RS485_PORT &= ~_BV(RS485_TXON);	     /* disable RS485 transmitter */
-#endif
+    #endif
 }
 
 
 char getch(void)
 {
-#ifdef __AVR_ATmega128__
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
     if(bootuart == 0) {
 	while(!(UCSR0A & _BV(RXC0)));
 	return UDR0;
@@ -898,9 +904,6 @@ char getch(void)
 	return UDR1;
     }
     return 0;
-#elif defined __AVR_ATmega168__
-    while(!(UCSR0A & _BV(RXC0)));
-    return UDR0;
 #else
     /* m8,16,32,169,8515,8535,163 */
     while(!(UCSRA & _BV(RXC)));
@@ -913,7 +916,7 @@ void getNch(uint8_t count)
 {
     uint8_t i;
     for(i=0;i<count;i++) {
-#ifdef __AVR_ATmega128__
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
 	if(bootuart == 0) {
 	    while(!(UCSR0A & _BV(RXC0)));
 	    UDR0;
@@ -922,9 +925,6 @@ void getNch(uint8_t count)
 	    while(!(UCSR1A & _BV(RXC1)));
 	    UDR1;
 	}
-#elif defined __AVR_ATmega168__
-	while(!(UCSR0A & _BV(RXC0)));
-	UDR0;
 #else
 	/* m8,16,32,169,8515,8535,163 */
 	while(!(UCSRA & _BV(RXC)));
