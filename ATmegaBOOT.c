@@ -99,7 +99,7 @@
  */
 #define HW_VER	 0x02
 #define SW_MAJOR 0x01
-#define SW_MINOR 0x10
+#define SW_MINOR 0x0F
 
 
 /* monitor functions will only be compiled when using ATmega128, due to
@@ -634,7 +634,7 @@ int main(void)
 		putch(0x14);
 		for (w=0;w < length.word;w++) {		        // Can handle odd and even lengths okay
 		    if (flags.eeprom) {	                        // Byte access EEPROM read
-#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
+#if defined(__AVR_ATmega168__)
 			while(EECR & (1<<EEPE));
 			EEAR = (uint16_t)(void *)address.word;
 			EECR |= (1<<EERE);
