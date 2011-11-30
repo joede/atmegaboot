@@ -144,7 +144,7 @@
 #elif defined __AVR_ATmega324P__
   #define SIG2	0x95
   #define SIG3	0x08
-  #define PAGE_SIZE	0x80U   //128 words
+  #define PAGE_SIZE	0x40U   //64 words
 
 #elif defined __AVR_ATmega16__
   #define SIG2	0x94
@@ -301,7 +301,6 @@ int main(void)
 #ifdef BL_PIN
     if ( pgm_read_byte_near(0x0000) != 0xFF )
     {
-
 	/* check if bootloader pin is set low */
 	if(bit_is_set(BL_PIN, BL)) {
           app_start();
