@@ -99,7 +99,7 @@
  */
 #define HW_VER	 0x02
 #define SW_MAJOR 0x01
-#define SW_MINOR 0x0F
+#define SW_MINOR 0x10
 
 
 /* monitor functions will only be compiled when using ATmega128, due to
