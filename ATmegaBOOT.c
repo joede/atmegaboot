@@ -9,7 +9,7 @@
  *
  * -----------------------------------------------------------------------------
  * V1.0  first release without upstream. Modify define __VERSION__ to change the
- *       new version string.
+ *       new version string and don't forget the Makefile!
  *
  * -----------------------------------------------------------------------------
  * Changes made by Joerg Desch <jd@voelker-web.de> are documented in the new
