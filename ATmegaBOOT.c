@@ -1,67 +1,64 @@
-/**********************************************************/
-/* Serial Bootloader for Atmel megaAVR Controllers        */
-/*                                                        */
-/* tested with ATmega8, ATmega128 and ATmega168           */
-/* should work with other mega's, see code for details    */
-/*                                                        */
-/* ATmegaBOOT.c                                           */
-/*                                                        */
-/* build: 111202                                          */
-/* date : 2.13.2011                                       */
-/* ------------------------------------------------------ */
-/*                                                        */
-/* 2011/12/2 jd@voelker-web.de                            */
-/* SW_MINOR changed from 0x0F to 0x10. Added support for  */
-/* m324p, m644, m644p.                                    */
-/*                                                        */
-/* 2008/6/29 jd@voelker-web.de                            */
-/* Added additional configuration of port setup and more. */
-/* The code now uses an optional config.h                 */
-/*                                                        */
-/* Monitor and debug functions were added to the original */
-/* code by Dr. Erik Lins, chip45.com. (See below)         */
-/*                                                        */
-/* Thanks to Karl Pitrich for fixing a bootloader pin     */
-/* problem and more informative LED blinking!             */
-/*                                                        */
-/* For the latest version see:                            */
-/* http://www.chip45.com/                                 */
-/*                                                        */
-/* ------------------------------------------------------ */
-/*                                                        */
-/* based on stk500boot.c                                  */
-/* Copyright (c) 2003, Jason P. Kyle                      */
-/* All rights reserved.                                   */
-/* see avr1.org for original file and information         */
-/*                                                        */
-/* This program is free software; you can redistribute it */
-/* and/or modify it under the terms of the GNU General    */
-/* Public License as published by the Free Software       */
-/* Foundation; either version 2 of the License, or        */
-/* (at your option) any later version.                    */
-/*                                                        */
-/* This program is distributed in the hope that it will   */
-/* be useful, but WITHOUT ANY WARRANTY; without even the  */
-/* implied warranty of MERCHANTABILITY or FITNESS FOR A   */
-/* PARTICULAR PURPOSE.  See the GNU General Public        */
-/* License for more details.                              */
-/*                                                        */
-/* You should have received a copy of the GNU General     */
-/* Public License along with this program; if not, write  */
-/* to the Free Software Foundation, Inc.,                 */
-/* 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA */
-/*                                                        */
-/* Licence can be viewed at                               */
-/* http://www.fsf.org/licenses/gpl.txt                    */
-/*                                                        */
-/* Target = Atmel AVR m128,m64,m32,m16,m8,m162,m163,m169, */
-/* m8515,m8535. ATmega161 has a very small boot block so  */
-/* isn't supported.                                       */
-/*                                                        */
-/* Tested with m128,m8,m163 - feel free to let me know    */
-/* how/if it works for you.                               */
-/*                                                        */
-/**********************************************************/
+/* ATmegaBOOT -- Serial Bootloader for Atmel megaAVR Controllers
+ * -----------------------------------------------------------------------------
+ *
+ * Release: V1.0
+ * date : 2.13.2011
+ *
+ * Tested with: ATmega8, ATmega128, ATmega324P
+ * should work with other mega's, see code for details
+ *
+ * -----------------------------------------------------------------------------
+ * V1.0  first release without upstream. Modify define __VERSION__ to change the
+ *       new version string.
+ *
+ * -----------------------------------------------------------------------------
+ * Changes made by Joerg Desch <jd@voelker-web.de> are documented in the new
+ * History file!
+ *
+ * Monitor and debug functions were added to the original
+ * code by Dr. Erik Lins, chip45.com. (See below)
+ *
+ * Thanks to Karl Pitrich for fixing a bootloader pin
+ * problem and more informative LED blinking!
+ *
+ * For the latest version see:
+ * http://www.chip45.com/
+ *
+ * -----------------------------------------------------------------------------
+ * based on stk500boot.c
+ * Copyright (c) 2003, Jason P. Kyle
+ * All rights reserved.
+ * see avr1.org for original file and information
+ *
+ * This program is free software; you can redistribute it
+ * and/or modify it under the terms of the GNU General
+ * Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will
+ * be useful, but WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE.  See the GNU General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU General
+ * Public License along with this program; if not, write
+ * to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+ *
+ * Licence can be viewed at
+ * http://www.fsf.org/licenses/gpl.txt
+ *
+ * Target = Atmel AVR m128,m64,m32,m16,m8,m162,m163,m169,
+ * m8515,m8535. ATmega161 has a very small boot block so
+ * isn't supported.
+ *
+ * Tested with m128,m8,m163 - feel free to let me know
+ * how/if it works for you.
+ *
+ * -----------------------------------------------------------------------------
+ */
 
 
 /* some includes */
@@ -71,6 +68,7 @@
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
 
+#define __VERSION__ "V1.0"
 
 /* the current avr-libc eeprom functions do not support the ATmega168 */
 /* own eeprom write/read functions are used instead */
@@ -695,7 +693,7 @@ int main(void)
 #if defined WELCOME_MSG
 		    PGM_P welcome = {WELCOME_MSG};
 #else
-		    PGM_P welcome = {"ATmegaBOOT Monitor - (C) J.P.Kyle, E.Lins - 050815\n\r"};
+		    PGM_P welcome = {"ATmegaBOOT Monitor "__VERSION__" - (C) J.P.Kyle, E.Lins - 050815\n\r"};
 #endif
 
 		    /* turn on LED */

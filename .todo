@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<todo version="0.1.20">
+    <title>
+        ATmegaBOOT - an AVR boot loader
+    </title>
+    <note priority="medium" time="1322827824">
+        avrdude 5.8 cant read the signature! It allways read 0x000000! The command itself works fine (tested with an terminal program).
+    </note>
+    <note priority="medium" time="1322827875">
+        Reading the fuses isn't possible. The implementation isn't done! Need to know the protocol...
+    </note>
+    <note priority="medium" time="1322828079">
+        Feature: the bootloader could check a "start application" flag in the eeprom. If this 2 byte flag is set to "BL", the bootloader stays active. If the flag is 0xFFFF, the bootloader tries to start the application. If the FLASH at 0x0000 is 0xFF, there is no application flashed and the bootloads stays active too. After flashing an application, the bootloader overwrites the "BL" with 0xFFFF. Important: avrdude must use "quit programming mode" to start overwriting "BL" and it must use "quit booloader" to start the application. This must be checked first!
+    </note>
+</todo>

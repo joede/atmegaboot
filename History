@@ -11,6 +11,12 @@
 |                    Copyright (c) Dipl.-Ing. J. Desch                    |
 +=========================================================================+
 
+2011/12/2 - jd
+
+ * due to the fact, that the upstream release isn't available anymore, we
+   can ignore the ugly release id. So I've changed the current release
+   "20111202" to V1.0.
+
 2011/11/24 - jd
 
  * added support for m664, m644p and m324p with support for both uarts.

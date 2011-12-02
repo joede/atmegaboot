@@ -1,0 +1,11 @@
+.dep
+.obj
+contrib
+*.bin
+*.eep
+*.elf
+*.hex
+*.lss
+*.map
+*.sym
+config.h
