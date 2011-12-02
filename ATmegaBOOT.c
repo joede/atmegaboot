@@ -6,11 +6,11 @@
 /*                                                        */
 /* ATmegaBOOT.c                                           */
 /*                                                        */
-/* build: 111124                                          */
-/* date : 24.11.2011                                      */
+/* build: 111202                                          */
+/* date : 2.13.2011                                       */
 /* ------------------------------------------------------ */
 /*                                                        */
-/* 2011/11/24 jd@voelker-web.de                           */
+/* 2011/12/2 jd@voelker-web.de                            */
 /* SW_MINOR changed from 0x0F to 0x10. Added support for  */
 /* m324p, m644, m644p.                                    */
 /*                                                        */
