@@ -84,39 +84,28 @@
  *
  * To enable the setup of an port, uncomment INIT_PORT_*!
  */
+#define INIT_PORT_A
+#define DIR_PORT_A  BIN2BYTE(11111111)
+#define VAL_PORT_A  BIN2BYTE(00000000)
+#define INIT_PORT_B
+#define DIR_PORT_B  BIN2BYTE(11111111)
+#define VAL_PORT_B  BIN2BYTE(00001101)
+#define INIT_PORT_C
+#define DIR_PORT_C  BIN2BYTE(00000000)
+#define VAL_PORT_C  BIN2BYTE(11111111)
+#define INIT_PORT_D
+#define DIR_PORT_D  BIN2BYTE(00010110)
+#define VAL_PORT_D  BIN2BYTE(11101111)
+#define INIT_PORT_E
+#define DIR_PORT_E  BIN2BYTE(00011110)
+#define VAL_PORT_E  BIN2BYTE(11100011)
+#define INIT_PORT_F
+#define DIR_PORT_F  BIN2BYTE(00000000)
+#define VAL_PORT_F  BIN2BYTE(00000001)
+#define INIT_PORT_G
+#define DIR_PORT_G  BIN2BYTE(00001111)
+#define VAL_PORT_G  BIN2BYTE(00000000)
 
-/* #define INIT_PORT_A */
-/* #define DIR_PORT_A  BIN2BYTE(00000000) */
-/* #define VAL_PORT_A  BIN2BYTE(11111111) */
-
-/* #define INIT_PORT_B */
-/* #define DIR_PORT_B  BIN2BYTE(00000000) */
-/* #define VAL_PORT_B  BIN2BYTE(11111111) */
-
-/* #define INIT_PORT_C */
-/* #define DIR_PORT_C  BIN2BYTE(00000000) */
-/* #define VAL_PORT_C  BIN2BYTE(11111111) */
-
-/* #define INIT_PORT_D */
-/* #define DIR_PORT_D  BIN2BYTE(00000000) */
-/* #define VAL_PORT_D  BIN2BYTE(11111111) */
-
-/* #define INIT_PORT_E */
-/* #define DIR_PORT_E  BIN2BYTE(00000000) */
-/* #define VAL_PORT_E  BIN2BYTE(11111111) */
-
-/* #define INIT_PORT_F */
-/* #define DIR_PORT_F  BIN2BYTE(00000000) */
-/* #define VAL_PORT_F  BIN2BYTE(11111111) */
-
-/* #define INIT_PORT_G */
-/* #define DIR_PORT_G  BIN2BYTE(00000000) */
-/* #define VAL_PORT_G  BIN2BYTE(11111111) */
-
-/* #define INIT_PORT_H */
-/* #define DIR_PORT_H  BIN2BYTE(00000000) */
-/* #define VAL_PORT_H  BIN2BYTE(11111111) */
-				      
 
 
 /* ==[End of file]========================================================== */

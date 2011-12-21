@@ -8,7 +8,7 @@
  * should work with other mega's, see code for details
  *
  * -----------------------------------------------------------------------------
- * V1.0  first release without upstream. Modify define __VERSION__ to change the
+ * V1.0  first release without upstream. Modify define BL_RELEASE to change the
  *       new version string and don't forget the Makefile!
  *
  * -----------------------------------------------------------------------------
@@ -68,7 +68,7 @@
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
 
-#define __VERSION__ "V1.0"
+#define BL_RELEASE "V1.0"
 
 /* the current avr-libc eeprom functions do not support the ATmega168 */
 /* own eeprom write/read functions are used instead */
@@ -693,7 +693,7 @@ int main(void)
 #if defined WELCOME_MSG
 		    PGM_P welcome = {WELCOME_MSG};
 #else
-		    PGM_P welcome = {"ATmegaBOOT Monitor "__VERSION__" - (C) J.P.Kyle, E.Lins - 050815\n\r"};
+		    PGM_P welcome = {"ATmegaBOOT Monitor " BL_RELEASE " - (C) J.P.Kyle, E.Lins, JD\n\r"};
 #endif
 
 		    /* turn on LED */

@@ -113,8 +113,11 @@ ifndef ISP_TARGET
 endif
 	@echo "checking done..."
 
-isp: $(PROGRAM).hex
+ispfuses: $(PROGRAM).hex
 	$(ISPFUSES)
+	$(ISPFLASH)
+
+isp: $(PROGRAM).hex
 	$(ISPFLASH)
 
 $(PROGRAM).elf: $(OBJ)

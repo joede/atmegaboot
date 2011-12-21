@@ -6,7 +6,7 @@
 USE_CONFIG_H = 1
 
 ## the oszillator frequency
-F_CPU        = 7372800
+F_CPU        = 11059200
 
 ## the target type for the GCC calls
 MCU_TARGET   = atmega128
@@ -16,12 +16,18 @@ MCU_TARGET   = atmega128
 BOOT_START   = 0x1E000
 
 ## The fuses. For AVRs without efuse, comment out this line
-ISP_EFUSE    = 0xff
-ISP_HFUSE    = 0x18
-ISP_LFUSE    = 0xff
+#
+# we don't call the bootloader at powerup!
+#
+ISP_EFUSE    = 0xFF
+ISP_HFUSE    = 0xC9
+ISP_LFUSE    = 0x3F
 
 ## Set to 1 to enable the monitor
 USE_MONITOR  = 1
+
+## The default baudrate. Uncomment this line to change the default 115200bps!
+BAUDRATE     = 38400
 
 ## Onboard LED is connected to pin PB3
 ## Define the port-, the DDR-, the pin register and the pin number of the output,
@@ -34,9 +40,12 @@ LED          = PINB3
 ## Input pin to allow selection of the bootloader (Mega128)
 ## Define the port-, the DDR-, the pin register and the pin number of the
 ## input, which must be pulled low to enter the bootloader.
-BL_DDR       = DDRD
-BL_PORT      = PORTD
-BL_PIN       = PIND
-BL           = PIND5
+#
+# no BL pin here!
+#
+#BL_DDR       = DDRD
+#BL_PORT      = PORTD
+#BL_PIN       = PIND
+#BL           = PIND5
 
 ## --------- end of file ---------
