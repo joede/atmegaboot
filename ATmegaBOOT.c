@@ -353,7 +353,7 @@ int main(void)
 
     putch('\0');
 
-#if 0
+#if 1
     // simple "hello" for debugging...
     putch('U');
     putch('U');
@@ -891,20 +891,26 @@ void putch(char ch)
 
 char getch(void)
 {
+    uint8_t d, s;
 #if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
     if(bootuart == 0) {
 	while(!(UCSR0A & _BV(RXC0)));
-	return UDR0;
+	s = UCSR0A; d = UDR0;
+	if ( !((s&_BV(FE0))|(s&_BV(DOR0))) )
+	    return d;
     }
     else if(bootuart == 1) {
 	while(!(UCSR1A & _BV(RXC1)));
-	return UDR1;
+	s = UCSR1A; d = UDR1;
+	if ( !((s&_BV(FE1))|(s&_BV(DOR1))) )
+	    return d;
     }
     return 0;
 #else
     /* m8,16,32,169,8515,8535,163 */
     while(!(UCSRA & _BV(RXC)));
-    return UDR;
+    s = UCSRA; d = UDR;
+    return ((s&_BV(FE0))|(s&_BV(DOR0))) ? 0 : d;
 #endif
 }
 

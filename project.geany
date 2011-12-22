@@ -1,0 +1,20 @@
+
+[indentation]
+indent_width=4
+indent_type=2
+indent_hard_tab_width=8
+detect_indent=false
+indent_mode=2
+
+[project]
+name=ATmegaBOOT
+base_path=.
+make_in_base_path=false
+description=
+run_cmd=
+
+[files]
+
+[long line marker]
+long_line_behaviour=1
+long_line_column=80

@@ -40,7 +40,7 @@ else ifeq ($(MCU_TARGET),atmega2560)
 endif
 
 LDSECTION  = --section-start=.text=$(BOOT_START)
-ISPFUSES   = avrdude -c $(ISPTOOL) -p $(ISP_TARGET) -P $(ISPPORT) $(ISPSPEED) -u -U efuse:w:$(ISP_EFUSE):m -U hfuse:w:$(ISP_HFUSE):m -U lfuse:w:$(ISP_LFUSE):m
+ISPFUSES   = avrdude -c $(ISPTOOL) -p $(ISP_TARGET) -P $(ISPPORT) $(ISPSPEEDFUSES) -u -U efuse:w:$(ISP_EFUSE):m -U hfuse:w:$(ISP_HFUSE):m -U lfuse:w:$(ISP_LFUSE):m
 ISPFLASH   = avrdude -c $(ISPTOOL) -p $(ISP_TARGET) -P $(ISPPORT) $(ISPSPEED) -V -U flash:w:$(PROGRAM)_$(PRODUCT)_$(BUILD).hex
 
 
