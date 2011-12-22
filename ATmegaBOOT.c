@@ -240,6 +240,16 @@ uint8_t bootuart = 0;
  */
 void (*app_start)(void) = 0x0000;
 
+/* The welcome message of the monitor
+ */
+#ifdef MONITOR
+  #if defined WELCOME_MSG
+    const char welcome[] PROGMEM = {WELCOME_MSG};
+  #else
+    const char welcome[] PROGMEM = {"ATmegaBOOT Monitor " BL_RELEASE " - (C) J.P.Kyle, E.Lins, JD\n\r"};
+  #endif
+#endif
+
 
 /* main program starts here */
 int main(void)
@@ -353,7 +363,7 @@ int main(void)
 
     putch('\0');
 
-#if 1
+#if 0
     // simple "hello" for debugging...
     putch('U');
     putch('U');
@@ -673,28 +683,18 @@ int main(void)
 	    byte_response(0x00);
 	}
 
-
 #ifdef MONITOR
-
 	/* here come the extended monitor commands by Erik Lins */
-
 	/* check for three times exclamation mark pressed */
 	else if(ch=='!') {
 	    ch = getch();
 	    if(ch=='!') {
 		ch = getch();
 		if(ch=='!') {
-
 #ifdef __AVR_ATmega128__
 		    uint16_t extaddr;
 #endif
 		    uint8_t addrl, addrh;
-
-#if defined WELCOME_MSG
-		    PGM_P welcome = {WELCOME_MSG};
-#else
-		    PGM_P welcome = {"ATmegaBOOT Monitor " BL_RELEASE " - (C) J.P.Kyle, E.Lins, JD\n\r"};
-#endif
 
 		    /* turn on LED */
 		    LED_DDR |= _BV(LED);
@@ -758,7 +758,13 @@ int main(void)
 			/* read from uart and echo back */
 			else if(ch == 'u') {
 			    for(;;) {
-				putch(getch());
+				ch = getch();
+				putch(ch);
+				if ( ch == 0x1B )
+				{
+				    putsP(PSTR("\n\r: "));
+				    break;
+				}
 			    }
 			}
 #ifdef __AVR_ATmega128__
@@ -799,9 +805,10 @@ int main(void)
 
 void putsP (PGM_P s)
 {
-    for(i=0; s[i] != '\0'; ++i)
+    char c;
+    while ( (c=pgm_read_byte_far(s++)) != 0 )
     {
-	putch(s[i]);
+	putch(c);
     }
 }
 
@@ -896,6 +903,10 @@ char getch(void)
     if(bootuart == 0) {
 	while(!(UCSR0A & _BV(RXC0)));
 	s = UCSR0A; d = UDR0;
+	if ( s&_BV(FE0) )
+	    flash_led(2);
+	if ( s&_BV(DOR0) )
+	    flash_led(4);
 	if ( !((s&_BV(FE0))|(s&_BV(DOR0))) )
 	    return d;
     }
@@ -971,7 +982,11 @@ void flash_led(uint8_t count)
 	LED_PORT &= ~_BV(LED);
 	for(l = 0; l < (F_CPU/800); ++l);
     } while (--count);
+
+    for(l = 0; l < (F_CPU/100); ++l)
+	;
 }
+
 
 
 #ifdef WANT_WAIT_BL

@@ -14,6 +14,13 @@ description=
 run_cmd=
 
 [files]
+current_page=2
+FILE_NAME_0=0;None;0;16;2;1;0;/media/nfs/jd/work/own/misc-stuff/atmegaboot/History;0;4
+FILE_NAME_1=1978;Make;0;16;1;1;0;/media/nfs/jd/work/own/misc-stuff/atmegaboot/Makefile;0;4
+FILE_NAME_2=9068;C;0;16;2;1;0;/media/nfs/jd/work/own/misc-stuff/atmegaboot/ATmegaBOOT.c;0;4
+FILE_NAME_3=3391;C;0;16;2;1;0;/media/nfs/jd/work/own/misc-stuff/atmegaboot/projects/config_SAVIMASTER.h;0;4
+FILE_NAME_4=0;Make;0;16;1;1;0;/media/nfs/jd/work/own/misc-stuff/atmegaboot/projects/isp_SAVIMASTER.mak;0;4
+FILE_NAME_5=0;Make;0;16;1;1;0;/media/nfs/jd/work/own/misc-stuff/atmegaboot/projects/product_SAVIMASTER.mak;0;4
 
 [long line marker]
 long_line_behaviour=1
