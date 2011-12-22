@@ -8,8 +8,11 @@
  * should work with other mega's, see code for details
  *
  * -----------------------------------------------------------------------------
- * V1.0  first release without upstream. Modify define BL_RELEASE to change the
- *       new version string and don't forget the Makefile!
+ * Modify define BL_RELEASE to change the new version string and don't forget
+ * the Makefile!
+ *
+ * V1.1  minor fixes.
+ * V1.0  first release without upstream.
  *
  * -----------------------------------------------------------------------------
  * Changes made by Joerg Desch <jd@voelker-web.de> are documented in the new
@@ -68,7 +71,7 @@
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
 
-#define BL_RELEASE "V1.0"
+#define BL_RELEASE "V1.1"
 
 /* the current avr-libc eeprom functions do not support the ATmega168 */
 /* own eeprom write/read functions are used instead */

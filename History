@@ -5,11 +5,18 @@
 
                   Project: ATmegaBOOT
                    Author: (changes by) J. Desch <jd@voelker-web.de>
-          Current Release: 1.0
+          Current Release: 1.1
 
 +=========================================================================+
 |                    Copyright (c) Dipl.-Ing. J. Desch                    |
 +=========================================================================+
+
+2011/12/22 - jd		REL_1_1
+
+ * fixed the putsP function (which didn't handle PGM_P strings)
+ * welcome message is now global and stored in PROGMEM
+ * getch now checks for "frame errors" and "overruns".
+ * monitor's "echo" ('u') can be abort by pressing ESC.
 
 2011/12/2 - jd		REL_1_0
 
