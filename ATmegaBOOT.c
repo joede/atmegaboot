@@ -809,7 +809,11 @@ int main(void)
 void putsP (PGM_P s)
 {
     char c;
+#if defined __AVR_ATmega128__
     while ( (c=pgm_read_byte_far(s++)) != 0 )
+#else
+    while ( (c=pgm_read_byte_near(s++)) != 0 )
+#endif
     {
 	putch(c);
     }

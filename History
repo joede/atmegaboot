@@ -11,6 +11,11 @@
 |                    Copyright (c) Dipl.-Ing. J. Desch                    |
 +=========================================================================+
 
+
+2012/05/03 - jd		REL_1_1B
+
+ * fix in putsP for MCUs which doesn't support pgm_read_byte_far().
+
 2011/12/22 - jd		REL_1_1
 
  * fixed the putsP function (which didn't handle PGM_P strings)
