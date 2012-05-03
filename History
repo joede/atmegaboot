@@ -15,6 +15,7 @@
 2012/05/03 - jd		REL_1_1B
 
  * fix in putsP for MCUs which doesn't support pgm_read_byte_far().
+ * fix: getch() for single UART MCUs has used wrong registers.
 
 2011/12/22 - jd		REL_1_1
 

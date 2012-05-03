@@ -928,7 +928,7 @@ char getch(void)
     /* m8,16,32,169,8515,8535,163 */
     while(!(UCSRA & _BV(RXC)));
     s = UCSRA; d = UDR;
-    return ((s&_BV(FE0))|(s&_BV(DOR0))) ? 0 : d;
+    return ((s&_BV(FE))|(s&_BV(DOR))) ? 0 : d;
 #endif
 }
 
