@@ -12,6 +12,11 @@
 +=========================================================================+
 
 
+2012/05/10 - jd		REL_1_1C
+
+ * fix: to access UCSRC, the highest bit must be set! This is a register
+   selection bit.
+
 2012/05/03 - jd		REL_1_1B
 
  * fix in putsP for MCUs which doesn't support pgm_read_byte_far().

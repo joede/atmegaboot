@@ -353,7 +353,7 @@ int main(void)
     UBRRL = (uint8_t)(w&0x00FF);
     UBRRH = (uint8_t)(w>>8);
     UCSRA = 0x00;
-    UCSRC = 0x06;
+    UCSRC = 0x86;			// IMPORTANT: bit7 is reg-select and must be set!
     UCSRB = _BV(TXEN)|_BV(RXEN);
 #endif
 
