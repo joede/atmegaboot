@@ -7,4 +7,6 @@ contrib
 *.lss
 *.map
 *.sym
+*.lst
+*.srec
 config.h
