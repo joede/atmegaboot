@@ -73,7 +73,7 @@
  *
  */
 //#define WANT_WAIT_BL 1
-//#define WANT_START_APP 1
+#define WANT_START_APP 1
 
 
 /* ===== Configuration of the port of the MCU =====

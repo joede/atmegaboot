@@ -1,6 +1,5 @@
-.dep
-.obj
 contrib
+*.o
 *.bin
 *.eep
 *.elf

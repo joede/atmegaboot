@@ -33,6 +33,12 @@
 /* #define WELCOME_MSG "MegaBOOT Monitor\r\n" */
 
 
+/* ===== Configure reading signature =====
+ * Uncomment this to enable the UNIVERSAL command of the STK500 protocol
+ * to return the signature. This method is used by AVRDUDE.
+ */
+/* #define WANT_AVRDUDE_SIGNATURE 1 */
+
 
 /* ===== Configure the RS485 stuff =====
  * If your UART is a RS485, define the port-, the DDR-register and the pin number

@@ -1,8 +1,8 @@
 /* ATmegaBOOT -- Serial Bootloader for Atmel megaAVR Controllers
  * -----------------------------------------------------------------------------
  *
- * Release: V1.0
- * date : 2.13.2011
+ * Release: V1.3
+ * date : 22.11.2012
  *
  * Tested with: ATmega8, ATmega128, ATmega324P
  * should work with other mega's, see code for details
@@ -11,6 +11,8 @@
  * Modify define BL_RELEASE to change the new version string and don't forget
  * the Makefile!
  *
+ * V1.3  fixes for avr-libc 1.7.1
+ * V1.2  fixes and simple implementation of the UNIVERSAL command.
  * V1.1  minor fixes.
  * V1.0  first release without upstream.
  *
@@ -71,7 +73,7 @@
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
 
-#define BL_RELEASE "V1.1"
+#define BL_RELEASE "V1.3"
 
 /* the current avr-libc eeprom functions do not support the ATmega168 */
 /* own eeprom write/read functions are used instead */
@@ -328,7 +330,7 @@ int main(void)
 
     w = (uint16_t)((F_CPU / ((BAUD_RATE)<<3) + 1UL) / 2UL) - 1;
 
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
     if ( bootuart == 0 ) {
 	UBRR0L = (uint8_t)(w&0x00FF);
 	UBRR0H = (uint8_t)(w>>8);
@@ -476,10 +478,46 @@ int main(void)
 	}
 
 
-	/* Universal SPI programming command, disabled.  Would be used for fuses and lock bits.  */
+	/* Universal SPI programming command. Would be used for fuses and lock bits,
+	 * but this isn't implemented yet. AVRDUDE uses the command to get the
+	 * signature! Normaly the 'u' is used.
+	 *
+	 * Define WANT_AVRDUDE_SIGNATURE in config*.h to enable this feature.
+	 *
+	 * Testet with ATmega32 only!
+	 */
 	else if(ch=='V') {
+#ifdef WANT_AVRDUDE_SIGNATURE
+	    char temp[4];
+	    temp[0] = getch();
+	    temp[1] = getch();
+	    temp[2] = getch();
+	    temp[3] = getch();
+	    if( temp[0]==0x30 && temp[1]==0x00 )
+	    {
+		switch(temp[2])
+		{
+		    case 0:
+			byte_response(SIG1);
+			break;
+		    case 1:
+			byte_response(SIG2);
+			break;
+		    case 2:
+			byte_response(SIG3);
+			break;
+		    default:
+			byte_response(0);
+			break;
+		}
+	    }
+	    else
+		byte_response(0);
+#else
+	    // not implemented / used
 	    getNch(4);
-	    byte_response(0x00);
+	    byte_response(0);
+#endif
 	}
 
 
@@ -517,7 +555,12 @@ int main(void)
 		    /* if ((length.byte[0] & 0x01) == 0x01) length.word++;	//Even up an odd number of bytes */
 		    if ((length.byte[0] & 0x01)) length.word++;	//Even up an odd number of bytes
 		    cli();					//Disable interrupts, just to be sure
-		    while(bit_is_set(EECR,EEWE));			//Wait for previous EEPROM writes to complete
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega324P__)
+		    // Mega xx4 changed EEWE to EEPE
+		    while(bit_is_set(EECR,EEPE));		//Wait for previous EEPROM writes to complete
+#else
+		    while(bit_is_set(EECR,EEWE));		//Wait for previous EEPROM writes to complete
+#endif
 		    asm volatile(
 				 "clr	r17		\n\t"	//page_word_count
 				 "lds	r30,address	\n\t"	//Address of FLASH location (in bytes)
@@ -612,7 +655,7 @@ int main(void)
 				 "rjmp	write_page	\n\t"
 				 "block_done:		\n\t"
 				 "clr	__zero_reg__	\n\t"	//restore zero register
-#if defined __AVR_ATmega168__  || __AVR_ATmega328P__ || __AVR_ATmega128__ || __AVR_ATmega1280__ || __AVR_ATmega1281__ || __AVR_ATmega1284P__ || __AVR_ATmega644P__ || __AVR_ATmega644__ || __AVR_ATmega324P__
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega128__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
 				 : "=m" (SPMCSR) : "M" (PAGE_SIZE) : "r0","r16","r17","r24","r25","r28","r29","r30","r31"
 #else
 				 : "=m" (SPMCR) : "M" (PAGE_SIZE) : "r0","r16","r17","r24","r25","r28","r29","r30","r31"
@@ -631,7 +674,7 @@ int main(void)
         else if(ch=='t') {
 	    length.byte[1] = getch();
 	    length.byte[0] = getch();
-#if defined __AVR_ATmega128__
+#if defined(__AVR_ATmega128__)
 	    if (address.word>0x7FFF) flags.rampz = 1;		// No go with m256, FIXME
 	    else flags.rampz = 0;
 #endif
@@ -657,7 +700,7 @@ int main(void)
 		    else {
 
 			if (!flags.rampz) putch(pgm_read_byte_near(address.word));
-#if defined __AVR_ATmega128__
+#if defined(__AVR_ATmega128__)
 			else putch(pgm_read_byte_far(address.word + 0x10000));
 			// Hmmmm, yuck  FIXME when m256 arrvies
 #endif
@@ -809,7 +852,7 @@ int main(void)
 void putsP (PGM_P s)
 {
     char c;
-#if defined __AVR_ATmega128__
+#ifdef __AVR_ATmega128__
     while ( (c=pgm_read_byte_far(s++)) != 0 )
 #else
     while ( (c=pgm_read_byte_near(s++)) != 0 )
@@ -867,7 +910,7 @@ void putch(char ch)
     RS485_PORT |= _BV(RS485_TXON);	     /* enable RS485 transmitter */
 #endif
 
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
     if(bootuart == 0) {
 	while (!(UCSR0A & _BV(UDRE0)));
 	UDR0 = ch;
@@ -906,7 +949,7 @@ void putch(char ch)
 char getch(void)
 {
     uint8_t d, s;
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
     if(bootuart == 0) {
 	while(!(UCSR0A & _BV(RXC0)));
 	s = UCSR0A; d = UDR0;
@@ -937,7 +980,7 @@ void getNch(uint8_t count)
 {
     uint8_t i;
     for(i=0;i<count;i++) {
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
 	if(bootuart == 0) {
 	    while(!(UCSR0A & _BV(RXC0)));
 	    UDR0;

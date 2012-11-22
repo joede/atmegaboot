@@ -5,17 +5,28 @@
 
                   Project: ATmegaBOOT
                    Author: (changes by) J. Desch <jd@voelker-web.de>
-          Current Release: 1.1
+          Current Release: 1.3
 
 +=========================================================================+
 |                    Copyright (c) Dipl.-Ing. J. Desch                    |
 +=========================================================================+
 
 
-2012/05/10 - jd		REL_1_1C
+2012/11/22 - jd		REL_1_3
+
+ * fix: multiple define in the preprocessor are changed from #ifdef
+   to #if. May be cleaner...
+
+ * fix: some register names has changed in avr-libc 1.7.1
+
+2012/05/10 - jd		REL_1_2
 
  * fix: to access UCSRC, the highest bit must be set! This is a register
    selection bit.
+
+ * new configuration option WANT_AVRDUDE_SIGNATURE! Defining this enables
+   the UNIVERSAL command. This is used by AVRDUDE to read out the
+   signature of the device. The sequence is tested only with an ATmega32!
 
 2012/05/03 - jd		REL_1_1B
 
