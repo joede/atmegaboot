@@ -17,8 +17,7 @@
  * V1.0  first release without upstream.
  *
  * -----------------------------------------------------------------------------
- * Changes made by Joerg Desch <jd@voelker-web.de> are documented in the new
- * History file!
+ * Changes made by Joerg Desch are documented in the new History file!
  *
  * Monitor and debug functions were added to the original
  * code by Dr. Erik Lins, chip45.com. (See below)
