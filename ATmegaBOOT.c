@@ -199,7 +199,11 @@
 
 
 /* function prototypes */
+#ifdef __AVR_ATmega128__
+void putsP (uint_farptr_t s);
+#else
 void putsP (PGM_P s);
+#endif
 void putch(char);
 char getch(void);
 void getNch(uint8_t);
@@ -847,8 +851,11 @@ int main(void)
 
 }
 
-
+#ifdef __AVR_ATmega128__
+void putsP (uint_farptr_t s)
+#else
 void putsP (PGM_P s)
+#endif
 {
     char c;
 #ifdef __AVR_ATmega128__
