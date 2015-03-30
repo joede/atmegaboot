@@ -19,6 +19,7 @@ ISP_TARGET   = m128
 BOOT_START   = 0x1E000
 
 ## The fuses. For AVRs without efuse, comment out this line
+## You ca use http://www.engbedded.com/fusecalc/ to get the correct fuses.
 ISP_EFUSE    = 0xff
 ISP_HFUSE    = 0x18
 ISP_LFUSE    = 0xff
