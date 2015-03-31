@@ -7,7 +7,7 @@
 
 
 # version (bases on MegaBOOT 050815)
-BUILD      = V1_3
+BUILD      = V1_4
 
 # program name should not be changed...
 PROGRAM    = ATmegaBOOT

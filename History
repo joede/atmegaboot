@@ -5,12 +5,23 @@
 
                   Project: ATmegaBOOT
                    Author: (changes by) J. Desch <github@jdesch.de>
-          Current Release: 1.3
+          Current Release: 1.4
 
 +=========================================================================+
 |                         Copyright (c) J. Desch                          |
 +=========================================================================+
 
+
+2015/03/27 - jd
+
+ * increased version to 1.4
+
+ * fix: avr-gcc 4.7.2 complains about the wrong pointer size of PGM_P! Switched
+   to uint_farptr_t for the Mega-128. Since the pointer are always 16bit, it
+   isn't possible to get the correct address by simply casting the pointer.
+   I've found the macro FAR(), which restaurates a 17bit address. The drawback
+   of the macro is, that is only works with variables. It is not possible to
+   pass a PSTR() constant to it. So I've put all messages into variables.
 
 2012/11/22 - jd		REL_1_3
 

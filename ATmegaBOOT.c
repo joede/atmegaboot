@@ -1,16 +1,17 @@
 /* ATmegaBOOT -- Serial Bootloader for Atmel megaAVR Controllers
  * -----------------------------------------------------------------------------
  *
- * Release: V1.3
- * date : 22.11.2012
+ * Release: V1.4
+ * Date:    31.3.2015
  *
  * Tested with: ATmega8, ATmega128, ATmega324P
  * should work with other mega's, see code for details
  *
  * -----------------------------------------------------------------------------
- * Modify define BL_RELEASE to change the new version string and don't forget
+ * Modify define BL_RELEASE below to change the new version string and don't forget
  * the Makefile!
  *
+ * V1.4  fixes of PROGMEM strings above 64k
  * V1.3  fixes for avr-libc 1.7.1
  * V1.2  fixes and simple implementation of the UNIVERSAL command.
  * V1.1  minor fixes.
@@ -72,7 +73,7 @@
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
 
-#define BL_RELEASE "V1.3"
+#define BL_RELEASE "V1.4"
 
 /* the current avr-libc eeprom functions do not support the ATmega168 */
 /* own eeprom write/read functions are used instead */
@@ -197,6 +198,36 @@
   #error "error: unknown target!"
 #endif
 
+/* Macros to access data defined in PROGMEM above 64kB. This macro doesn't work
+ * with PSTR() as parameter. It only works with char[]!
+ */
+#define FAR(var)                                      \
+({                                                    \
+    uint_farptr_t tmp;                                \
+                                                      \
+    __asm__ __volatile__(                             \
+                                                      \
+            "ldi    %A0, lo8(%1)"           "\n\t"    \
+            "ldi    %B0, hi8(%1)"           "\n\t"    \
+            "ldi    %C0, hh8(%1)"           "\n\t"    \
+            "clr    %D0"                    "\n\t"    \
+        :                                             \
+            "=d" (tmp)                                \
+        :                                             \
+            "p"  (&(var))                             \
+    );                                                \
+    tmp;                                              \
+})
+
+/* Macro to ensure a far pointer with PSTR() for MCUs where the bootloader
+ * is above 64kb boundary. All other MCUs passes the parameter without
+ * modifications
+ */
+#ifdef __AVR_ATmega128__
+#define PFSTR(val) FAR(val)
+#else
+#define PFSTR(val) (val)
+#endif
 
 /* function prototypes */
 #ifdef __AVR_ATmega128__
@@ -248,14 +279,18 @@ uint8_t bootuart = 0;
  */
 void (*app_start)(void) = 0x0000;
 
-/* The welcome message of the monitor
+/* All strings which should be printed with putsP.
  */
 #ifdef MONITOR
+  // The welcome message of the monitor
   #if defined WELCOME_MSG
-    const char welcome[] PROGMEM = {WELCOME_MSG};
+    const char pstr_welcome[] PROGMEM = {WELCOME_MSG};
   #else
-    const char welcome[] PROGMEM = {"ATmegaBOOT Monitor " BL_RELEASE " - (C) J.P.Kyle, E.Lins, JD\n\r"};
+    const char pstr_welcome[] PROGMEM = {"ATmegaBOOT Monitor " BL_RELEASE " - (C) J.P.Kyle, E.Lins, JD\n\r"};
   #endif
+  const char pstr_prompt[] PROGMEM    = {"\n\r: "};
+  const char pstr_BL[] PROGMEM        = {"BL="};
+  const char pstr_bus[] PROGMEM       = {"bus"};
 #endif
 
 
@@ -400,7 +435,6 @@ int main(void)
 	else if(ch=='1') {
 	    if (getch() == ' ') {
 		putch(0x14);
-		//putsP(PSTR("AVR ISP"))
 		putch('A');
 		putch('V');
 		putch('R');
@@ -750,13 +784,12 @@ int main(void)
 		    LED_PORT &= ~_BV(LED);
 
 		    /* print a welcome message and command overview */
-		    putsP(welcome);
+		    putsP(PFSTR(pstr_welcome));
 
 		    /* test for valid commands */
 		    for(;;)
 		    {
-			putsP(PSTR("\n\r: "));
-
+			putsP(PFSTR(pstr_prompt));
 			ch = getch();
 			putch(ch);
 
@@ -795,7 +828,7 @@ int main(void)
 			/* dump bootloader pin to check it */
                         else if (ch == 'p') {
 #ifdef BL_PIN
-			    putsP(PSTR("BL="));
+			    putsP(PFSTR(pstr_BL));
 			    if(bit_is_set(BL_PIN, BL)) {
 				putch('1');
 			    } else {
@@ -811,7 +844,7 @@ int main(void)
 				putch(ch);
 				if ( ch == 0x1B )
 				{
-				    putsP(PSTR("\n\r: "));
+				    putsP(PFSTR(pstr_prompt));
 				    break;
 				}
 			    }
@@ -819,7 +852,7 @@ int main(void)
 #ifdef __AVR_ATmega128__
 			/* external bus loop  */
 			else if(ch == 'b') {
-			    putsP(PSTR("bus"));
+			    putsP(PFSTR(pstr_bus));
 			    MCUCR = 0x80;
 			    XMCRA = 0;
 			    XMCRB = 0;
@@ -867,7 +900,6 @@ void putsP (PGM_P s)
 	putch(c);
     }
 }
-
 
 char gethex(void)
 {
