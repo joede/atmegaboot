@@ -27,6 +27,9 @@ ISP_LFUSE    = 0xff
 ## Set to 1 to enable the monitor
 USE_MONITOR  = 1
 
+## The default baudrate. Uncomment this line to change the default 115200bps!
+#BAUDRATE     = 38400
+
 ## Onboard LED is connected to pin PB3
 ## Define the port-, the DDR-, the pin register and the pin number of the output,
 ## where the "Bootloader LED" is connected too.
