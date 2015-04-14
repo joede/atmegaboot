@@ -12,6 +12,11 @@
 +=========================================================================+
 
 
+2015/04/14 - jd
+
+ * add the optional configuration entry for the baudrate to the template
+   of the product configuration.
+
 2015/03/27 - jd
 
  * increased version to 1.4
