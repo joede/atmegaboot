@@ -33,5 +33,12 @@ So the first steps for a product "FOO" could look like this:
 
 **Note:** to configure the ISP settings, just edit `isp_FOO.mak`!
 
+To upload a firmware after the bootloader has been started, just enter a command
+line like this:
+
+    $ avrdude -p atmega128 -P /dev/ttyUSB0 -c stk500v1 -b 38400 -U flash:w:blk1-cam-avr-1.1.2.hex
+
+**Note:** the bootloader is still active after avrdude has done it's job!
+You must restart your device to enter the application!
 
 Have fun.
