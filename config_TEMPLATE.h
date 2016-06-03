@@ -50,12 +50,23 @@
 /* #define RS485_PORT  PORTE */
 
 
-
 /* ===== Selection of the UART =====
  * If the AVR supports more than one UART, use 0 for UART0 and 1 for UART1. If
  * you comment out this define, UART0 is used as default.
  */
 #define USE_UART 0
+
+
+/* ===== Configure "forced enter" mode =====
+ * In the case there is no bootloader pin, uncommenting this flag configures
+ * the bootloader to use "forced enter". Therefore the booloader waits up to
+ * 3 seconds for a sequence of 8+ consecutive '*' characters at the UART.
+ * If this '*' sequence is received, the bootloader starts sending '*' and waits
+ * for an empty UART buffer. If no more data is fetched, the regular bootloader
+ * is entered.
+ */
+//#define USE_FORCED_BOOTLOAD_ENTER 1
+
 
 /* ===== Configure WDT Reset handling =====
  * Uncomment the line below too ignore WDT resets. If the BL_PIN is low

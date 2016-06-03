@@ -1,8 +1,8 @@
 /* ATmegaBOOT -- Serial Bootloader for Atmel megaAVR Controllers
  * -----------------------------------------------------------------------------
  *
- * Release: V1.4
- * Date:    31.3.2015
+ * Release: V1.5
+ * Date:    2.6.2016
  *
  * Tested with: ATmega8, ATmega128, ATmega324P
  * should work with other mega's, see code for details
@@ -11,6 +11,7 @@
  * Modify define BL_RELEASE below to change the new version string and don't forget
  * the Makefile!
  *
+ * V1.5  add "forced enter" mode
  * V1.4  fixes of PROGMEM strings above 64k
  * V1.3  fixes for avr-libc 1.7.1
  * V1.2  fixes and simple implementation of the UNIVERSAL command.
@@ -68,12 +69,13 @@
 
 /* some includes */
 #include <inttypes.h>
+#include <stdbool.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
 
-#define BL_RELEASE "V1.4"
+#define BL_RELEASE "V1.5"
 
 /* the current avr-libc eeprom functions do not support the ATmega168 */
 /* own eeprom write/read functions are used instead */
@@ -238,6 +240,7 @@ void putsP (PGM_P s);
 void putch(char);
 char getch(void);
 void getNch(uint8_t);
+bool haveChar(char expected);
 void byte_response(uint8_t);
 void nothing_response(void);
 char gethex(void);
@@ -246,6 +249,7 @@ void flash_led(uint8_t);
 #ifdef WANT_WAIT_BL
 void wait_bl_pin(void);
 #endif
+bool check_forced_enter(void);
 
 /* some variables */
 union address_union {
@@ -356,6 +360,13 @@ int main(void)
 	if(bit_is_set(BL_PIN, BL)) {
           app_start();
         }
+    }
+#elif defined(USE_FORCED_BOOTLOAD_ENTER)
+    if ( pgm_read_byte_near(0x0000) != 0xFF )
+    {
+	if ( !check_forced_enter() ) {
+          app_start();
+	}
     }
 #endif
 
@@ -984,6 +995,45 @@ void putch(char ch)
 }
 
 
+/* Try to read a byte from the UART. If there is a byte, compare it with the
+ * passed byte \c expected. The functions returns \c true, it a received
+ * byte equals to \c expected. In all other cases \c false is returned.
+ *
+ * If \c expected is 0x00, than we just wait for a character and do not
+ * compare it. In this case a returned \x true means that we have received
+ * a character.
+ */
+bool haveChar ( char expected )
+{
+    uint8_t d, s;
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
+    if(bootuart == 0) {
+	if (!(UCSR0A & _BV(RXC0)))
+	    return false;
+	s = UCSR0A; d = UDR0;
+	if ( ((s&_BV(FE0))|(s&_BV(DOR0))) )
+	    return false;
+    }
+    else if(bootuart == 1) {
+	if (!(UCSR1A & _BV(RXC1)))
+	    return false;
+	s = UCSR1A; d = UDR1;
+	if ( ((s&_BV(FE1))|(s&_BV(DOR1))) )
+	    return false;
+    }
+    else
+	return false;
+#else
+    /* m8,16,32,169,8515,8535,163 */
+    if ( !(UCSRA & _BV(RXC)) )
+	return false;
+    s = UCSRA; d = UDR;
+    if ( ((s&_BV(FE))|(s&_BV(DOR))) )
+	return false;
+#endif
+    return ((expected==0x00)||(expected==d))?true:false;
+}
+
 char getch(void)
 {
     uint8_t d, s;
@@ -1012,7 +1062,6 @@ char getch(void)
     return ((s&_BV(FE))|(s&_BV(DOR))) ? 0 : d;
 #endif
 }
-
 
 void getNch(uint8_t count)
 {
@@ -1054,7 +1103,6 @@ void nothing_response(void)
     }
 }
 
-
 /* flash onboard LED three times to signal entering of bootloader
  */
 void flash_led(uint8_t count)
@@ -1075,8 +1123,6 @@ void flash_led(uint8_t count)
 	;
 }
 
-
-
 #ifdef WANT_WAIT_BL
 void wait_bl_pin (void)
 {
@@ -1089,6 +1135,66 @@ void wait_bl_pin (void)
 	for(l = 0; l < (F_CPU/200); ++l);
     } while ( !bit_is_set(BL_PIN, BL) );
     for(l = 0; l < (F_CPU/200); ++l);
+}
+#endif
+
+/* Check for "forced mode" to enter the bootloader. In the case there is no
+ * bootloader pin, the bootloader can be configured (USE_FORCED_BOOTLOAD_ENTER)
+ * to wait 3 seconds for a sequence of 8+ consecutive '*' characters at the UART.
+ *
+ * If this '*' sequence is received, the bootloader starts sending '*' and waits
+ * for an empty UART buffer. If no more data is fetched, the regular bootloader
+ * can be entered.
+ *
+ * This functions returns \c true, if the bootloader can be enteres or not.
+ */
+#ifdef USE_FORCED_BOOTLOAD_ENTER
+const char pstr_done[] PROGMEM = {"--entered--\n\r"};
+bool check_forced_enter(void)
+{
+    volatile uint32_t l;		/* fool the optimizer */
+    uint8_t matches = 0;
+    uint8_t count = 0;
+
+    /* wait for the "forced enter" sequence of 8x '*' or timeout after 3sec
+     */
+    do
+    {
+putch('?');
+	if ( count++ )
+	    for (l=0; l<(F_CPU/200); ++l)
+		;
+	if ( haveChar('*') )
+	{
+putch('!');
+	    ++matches;
+	}
+    } while ( count<20 && matches<8 );
+    if ( matches<8 )
+    {
+putch('-');putch('-');putch('-');putch('-');putch('-');putch('-');
+	return false;
+    }
+
+    /* wait for "silence" on the UART. To indicate we are ready to enter
+     * the bootloader, we now send '*'
+     */
+    matches = 0;
+    count = 0;
+    do
+    {
+	putch('*');
+	if ( count++ )
+	    for (l=0; l<(F_CPU/200); ++l)
+		;
+	if ( !haveChar(0x00) )
+	    ++matches;
+    } while ( matches<8 );
+
+    /* print a "enter" message */
+    putsP(PFSTR(pstr_done));
+
+    return true;
 }
 #endif
 

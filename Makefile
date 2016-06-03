@@ -6,8 +6,8 @@
 ############################################################
 
 
-# version (bases on MegaBOOT 050815)
-BUILD      = V1_4
+# version (based on MegaBOOT 050815)
+BUILD      = V1_5
 
 # program name should not be changed...
 PROGRAM    = ATmegaBOOT

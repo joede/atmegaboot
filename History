@@ -5,12 +5,22 @@
 
                   Project: ATmegaBOOT
                    Author: (changes by) J. Desch <github@jdesch.de>
-          Current Release: 1.4
+          Current Release: 1.5
 
 +=========================================================================+
 |                         Copyright (c) J. Desch                          |
 +=========================================================================+
 
+
+2016/06/2 - jd
+
+ * add new "forced mode" to enter the bootloader. In the case there is no
+   bootloader pin, the bootloader can be configured (USE_FORCED_BOOTLOAD_ENTER)
+   to wait 3 seconds for a sequence of 8+ consecutive '*' at the UART.
+   If this '*' sequence is received, the bootloader starts sending '*' and wait
+   for an empty UART buffer. If no more data is fetched, the regular bootloader
+   is entered.
+ * add support for the 2561
 
 2015/04/14 - jd
 
