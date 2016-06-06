@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------------
  *
  * Release: V1.5
- * Date:    2.6.2016
+ * Date:    6.6.2016
  *
  * Tested with: ATmega8, ATmega128, ATmega324P
  * should work with other mega's, see code for details
@@ -11,7 +11,7 @@
  * Modify define BL_RELEASE below to change the new version string and don't forget
  * the Makefile!
  *
- * V1.5  add "forced enter" mode
+ * V1.5  add "forced enter" mode. add 2561
  * V1.4  fixes of PROGMEM strings above 64k
  * V1.3  fixes for avr-libc 1.7.1
  * V1.2  fixes and simple implementation of the UNIVERSAL command.
@@ -71,6 +71,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <avr/io.h>
+#include <avr/boot.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
@@ -121,10 +122,17 @@
  */
 #define SIG1	0x1E
 
-#if defined __AVR_ATmega128__
+#if defined __AVR_ATmega2561__
+  #define SIG2	0x98
+  #define SIG3	0x02
+  #define PAGE_SIZE	0x80U	//128 words
+  #define BOOTLOADER_ABOVE_64K 1
+
+#elif defined __AVR_ATmega128__
   #define SIG2	0x97
   #define SIG3	0x02
   #define PAGE_SIZE	0x80U	//128 words
+  #define BOOTLOADER_ABOVE_64K 1
 
 #elif defined __AVR_ATmega64__
   #define SIG2	0x96
@@ -225,14 +233,14 @@
  * is above 64kb boundary. All other MCUs passes the parameter without
  * modifications
  */
-#ifdef __AVR_ATmega128__
+#if defined(BOOTLOADER_ABOVE_64K)
 #define PFSTR(val) FAR(val)
 #else
 #define PFSTR(val) (val)
 #endif
 
 /* function prototypes */
-#ifdef __AVR_ATmega128__
+#if defined(BOOTLOADER_ABOVE_64K)
 void putsP (uint_farptr_t s);
 #else
 void putsP (PGM_P s);
@@ -250,6 +258,8 @@ void flash_led(uint8_t);
 void wait_bl_pin(void);
 #endif
 bool check_forced_enter(void);
+void app_start(void);
+void init_ports(void);
 
 /* some variables */
 union address_union {
@@ -275,13 +285,6 @@ uint8_t address_high;
 
 uint8_t i;
 uint8_t bootuart = 0;
-
-/* Entry point of the application. Another way may be the
- * autoreset via watchdog (sneaky!) BBR/LF 9/13/2008
- * WDTCSR = _BV(WDE);
- * while (1); // 16 ms
- */
-void (*app_start)(void) = 0x0000;
 
 /* All strings which should be printed with putsP.
  */
@@ -314,31 +317,7 @@ int main(void)
 
     /* optionally setup the CPU ports
      */
-#ifdef INIT_PORT_A
-    PORTA = VAL_PORT_A;  DDRA = DIR_PORT_A;
-#endif
-#ifdef INIT_PORT_B
-    PORTB = VAL_PORT_B;  DDRB = DIR_PORT_B;
-#endif
-#ifdef INIT_PORT_C
-    PORTC = VAL_PORT_C;  DDRC = DIR_PORT_C;
-#endif
-#ifdef INIT_PORT_D
-    PORTD = VAL_PORT_D;  DDRD = DIR_PORT_D;
-#endif
-#ifdef INIT_PORT_E
-    PORTE = VAL_PORT_E;  DDRE = DIR_PORT_E;
-#endif
-#ifdef INIT_PORT_F
-    PORTF = VAL_PORT_F;  DDRF = DIR_PORT_F;
-#endif
-#ifdef INIT_PORT_G
-    PORTG = VAL_PORT_G;  DDRG = DIR_PORT_G;
-#endif
-#ifdef INIT_PORT_H
-    PORTH = VAL_PORT_H;  DDRH = DIR_PORT_H;
-#endif
-
+    init_ports();
 
     /* set pin direction for bootloader pin and enable pullup
      */
@@ -361,13 +340,6 @@ int main(void)
           app_start();
         }
     }
-#elif defined(USE_FORCED_BOOTLOAD_ENTER)
-    if ( pgm_read_byte_near(0x0000) != 0xFF )
-    {
-	if ( !check_forced_enter() ) {
-          app_start();
-	}
-    }
 #endif
 
     /* initialize UART(s) depending on CPU defined */
@@ -378,8 +350,7 @@ int main(void)
 #endif
 
     w = (uint16_t)((F_CPU / ((BAUD_RATE)<<3) + 1UL) / 2UL) - 1;
-
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
     if ( bootuart == 0 ) {
 	UBRR0L = (uint8_t)(w&0x00FF);
 	UBRR0H = (uint8_t)(w>>8);
@@ -414,6 +385,15 @@ int main(void)
 
     /* flash onboard LED to signal entering of bootloader */
     flash_led(3);
+
+#if !defined(BL_PIN) && defined(USE_FORCED_BOOTLOAD_ENTER)
+    if ( pgm_read_byte_near(0x0000) != 0xFF )
+    {
+	if ( !check_forced_enter() ) {
+          app_start();
+	}
+    }
+#endif
 
     putch('\0');
 
@@ -596,14 +576,14 @@ int main(void)
 		else {					        //Write to FLASH one page at a time
 		    if (address.byte[1]>127) address_high = 0x01;	//Only possible with m128, m256 will need 3rd address byte. FIXME
 		    else address_high = 0x00;
-#ifdef __AVR_ATmega128__
+#if defined(BOOTLOADER_ABOVE_64K)
 		    RAMPZ = address_high;
 #endif
 		    address.word = address.word << 1;	        //address * 2 -> byte location
 		    /* if ((length.byte[0] & 0x01) == 0x01) length.word++;	//Even up an odd number of bytes */
 		    if ((length.byte[0] & 0x01)) length.word++;	//Even up an odd number of bytes
 		    cli();					//Disable interrupts, just to be sure
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega324P__)
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega324P__)
 		    // Mega xx4 changed EEWE to EEPE
 		    while(bit_is_set(EECR,EEPE));		//Wait for previous EEPROM writes to complete
 #else
@@ -703,7 +683,7 @@ int main(void)
 				 "rjmp	write_page	\n\t"
 				 "block_done:		\n\t"
 				 "clr	__zero_reg__	\n\t"	//restore zero register
-#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega128__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega128__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
 				 : "=m" (SPMCSR) : "M" (PAGE_SIZE) : "r0","r16","r17","r24","r25","r28","r29","r30","r31"
 #else
 				 : "=m" (SPMCR) : "M" (PAGE_SIZE) : "r0","r16","r17","r24","r25","r28","r29","r30","r31"
@@ -722,7 +702,7 @@ int main(void)
         else if(ch=='t') {
 	    length.byte[1] = getch();
 	    length.byte[0] = getch();
-#if defined(__AVR_ATmega128__)
+#if defined(BOOTLOADER_ABOVE_64K)
 	    if (address.word>0x7FFF) flags.rampz = 1;		// No go with m256, FIXME
 	    else flags.rampz = 0;
 #endif
@@ -748,7 +728,7 @@ int main(void)
 		    else {
 
 			if (!flags.rampz) putch(pgm_read_byte_near(address.word));
-#if defined(__AVR_ATmega128__)
+#if defined(BOOTLOADER_ABOVE_64K)
 			else putch(pgm_read_byte_far(address.word + 0x10000));
 			// Hmmmm, yuck  FIXME when m256 arrvies
 #endif
@@ -785,7 +765,7 @@ int main(void)
 	    if(ch=='!') {
 		ch = getch();
 		if(ch=='!') {
-#ifdef __AVR_ATmega128__
+#if defined(BOOTLOADER_ABOVE_64K)
 		    uint16_t extaddr;
 #endif
 		    uint8_t addrl, addrh;
@@ -860,7 +840,7 @@ int main(void)
 				}
 			    }
 			}
-#ifdef __AVR_ATmega128__
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega2561__)
 			/* external bus loop  */
 			else if(ch == 'b') {
 			    putsP(PFSTR(pstr_bus));
@@ -895,14 +875,14 @@ int main(void)
 
 }
 
-#ifdef __AVR_ATmega128__
+#if defined(BOOTLOADER_ABOVE_64K)
 void putsP (uint_farptr_t s)
 #else
 void putsP (PGM_P s)
 #endif
 {
     char c;
-#ifdef __AVR_ATmega128__
+#if defined(BOOTLOADER_ABOVE_64K)
     while ( (c=pgm_read_byte_far(s++)) != 0 )
 #else
     while ( (c=pgm_read_byte_near(s++)) != 0 )
@@ -959,7 +939,7 @@ void putch(char ch)
     RS485_PORT |= _BV(RS485_TXON);	     /* enable RS485 transmitter */
 #endif
 
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
     if(bootuart == 0) {
 	while (!(UCSR0A & _BV(UDRE0)));
 	UDR0 = ch;
@@ -1001,25 +981,26 @@ void putch(char ch)
  *
  * If \c expected is 0x00, than we just wait for a character and do not
  * compare it. In this case a returned \x true means that we have received
- * a character.
+ * a character. Even the overrun error and the frame error will be ignored.
  */
 bool haveChar ( char expected )
 {
     uint8_t d, s;
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
+    bool failed = false;
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
     if(bootuart == 0) {
 	if (!(UCSR0A & _BV(RXC0)))
 	    return false;
 	s = UCSR0A; d = UDR0;
 	if ( ((s&_BV(FE0))|(s&_BV(DOR0))) )
-	    return false;
+	    failed = true;
     }
     else if(bootuart == 1) {
 	if (!(UCSR1A & _BV(RXC1)))
 	    return false;
 	s = UCSR1A; d = UDR1;
 	if ( ((s&_BV(FE1))|(s&_BV(DOR1))) )
-	    return false;
+	    failed = true;
     }
     else
 	return false;
@@ -1029,15 +1010,17 @@ bool haveChar ( char expected )
 	return false;
     s = UCSRA; d = UDR;
     if ( ((s&_BV(FE))|(s&_BV(DOR))) )
-	return false;
+	failed = true;
 #endif
+    if ( (expected!=0x00) && failed )
+	return false;
     return ((expected==0x00)||(expected==d))?true:false;
 }
 
 char getch(void)
 {
     uint8_t d, s;
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
     if(bootuart == 0) {
 	while(!(UCSR0A & _BV(RXC0)));
 	s = UCSR0A; d = UDR0;
@@ -1067,7 +1050,7 @@ void getNch(uint8_t count)
 {
     uint8_t i;
     for(i=0;i<count;i++) {
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
 	if(bootuart == 0) {
 	    while(!(UCSR0A & _BV(RXC0)));
 	    UDR0;
@@ -1140,7 +1123,7 @@ void wait_bl_pin (void)
 
 /* Check for "forced mode" to enter the bootloader. In the case there is no
  * bootloader pin, the bootloader can be configured (USE_FORCED_BOOTLOAD_ENTER)
- * to wait 3 seconds for a sequence of 8+ consecutive '*' characters at the UART.
+ * to wait 3 seconds for a sequence of 5+ consecutive '*' characters at the UART.
  *
  * If this '*' sequence is received, the bootloader starts sending '*' and waits
  * for an empty UART buffer. If no more data is fetched, the regular bootloader
@@ -1156,23 +1139,20 @@ bool check_forced_enter(void)
     uint8_t matches = 0;
     uint8_t count = 0;
 
-    /* wait for the "forced enter" sequence of 8x '*' or timeout after 3sec
+    /* wait for the "forced enter" sequence of 5x '*' or timeout after 3sec
      */
     do
     {
-putch('?');
 	if ( count++ )
 	    for (l=0; l<(F_CPU/200); ++l)
 		;
 	if ( haveChar('*') )
 	{
-putch('!');
 	    ++matches;
 	}
-    } while ( count<20 && matches<8 );
-    if ( matches<8 )
+    } while ( count<20 && matches<5 );
+    if ( matches<5 )
     {
-putch('-');putch('-');putch('-');putch('-');putch('-');putch('-');
 	return false;
     }
 
@@ -1189,6 +1169,8 @@ putch('-');putch('-');putch('-');putch('-');putch('-');putch('-');
 		;
 	if ( !haveChar(0x00) )
 	    ++matches;
+	else
+	    matches = 0;
     } while ( matches<8 );
 
     /* print a "enter" message */
@@ -1197,5 +1179,43 @@ putch('-');putch('-');putch('-');putch('-');putch('-');putch('-');
     return true;
 }
 #endif
+
+void init_ports ( void )
+{
+#ifdef INIT_PORT_A
+    PORTA = VAL_PORT_A;  DDRA = DIR_PORT_A;
+#endif
+#ifdef INIT_PORT_B
+    PORTB = VAL_PORT_B;  DDRB = DIR_PORT_B;
+#endif
+#ifdef INIT_PORT_C
+    PORTC = VAL_PORT_C;  DDRC = DIR_PORT_C;
+#endif
+#ifdef INIT_PORT_D
+    PORTD = VAL_PORT_D;  DDRD = DIR_PORT_D;
+#endif
+#ifdef INIT_PORT_E
+    PORTE = VAL_PORT_E;  DDRE = DIR_PORT_E;
+#endif
+#ifdef INIT_PORT_F
+    PORTF = VAL_PORT_F;  DDRF = DIR_PORT_F;
+#endif
+#ifdef INIT_PORT_G
+    PORTG = VAL_PORT_G;  DDRG = DIR_PORT_G;
+#endif
+#ifdef INIT_PORT_H
+    PORTH = VAL_PORT_H;  DDRH = DIR_PORT_H;
+#endif
+}
+
+void app_start ( void )
+{
+    init_ports();			// reset all ports
+    boot_rww_enable();			// enable application section
+    asm volatile("clr r30 \n\t"
+		 "clr r31 \n\t"
+		 "ijmp \n\t"
+		);
+}
 
 /* ==[End of file]========================================================== */

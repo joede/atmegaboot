@@ -60,7 +60,7 @@
 /* ===== Configure "forced enter" mode =====
  * In the case there is no bootloader pin, uncommenting this flag configures
  * the bootloader to use "forced enter". Therefore the booloader waits up to
- * 3 seconds for a sequence of 8+ consecutive '*' characters at the UART.
+ * 3 seconds for a sequence of 5+ consecutive '*' characters at the UART.
  * If this '*' sequence is received, the bootloader starts sending '*' and waits
  * for an empty UART buffer. If no more data is fetched, the regular bootloader
  * is entered.

@@ -12,15 +12,17 @@
 +=========================================================================+
 
 
-2016/06/2 - jd
+2016/06/06 - jd
 
+ * increased version to 1.5
  * add new "forced mode" to enter the bootloader. In the case there is no
    bootloader pin, the bootloader can be configured (USE_FORCED_BOOTLOAD_ENTER)
-   to wait 3 seconds for a sequence of 8+ consecutive '*' at the UART.
+   to wait 3 seconds for a sequence of 5+ consecutive '*' at the UART.
    If this '*' sequence is received, the bootloader starts sending '*' and wait
    for an empty UART buffer. If no more data is fetched, the regular bootloader
    is entered.
- * add support for the 2561
+ * add support for the Mega2561
+ * add define BOOTLOADER_ABOVE_64K to MCU definitions
 
 2015/04/14 - jd
 

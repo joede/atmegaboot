@@ -12,4 +12,7 @@
     <note priority="medium" time="1322828079">
         Feature: the bootloader could check a "start application" flag in the eeprom. If this 2 byte flag is set to "BL", the bootloader stays active. If the flag is 0xFFFF, the bootloader tries to start the application. If the FLASH at 0x0000 is 0xFF, there is no application flashed and the bootloads stays active too. After flashing an application, the bootloader overwrites the "BL" with 0xFFFF. Important: avrdude must use "quit programming mode" to start overwriting "BL" and it must use "quit booloader" to start the application. This must be checked first!
     </note>
+    <note priority="low" time="1464949945">
+        should we replace the pgm_read_byte_near(0x0000) with pgm_read_byte_far(0x0000) for ATmega256x?
+    </note>
 </todo>

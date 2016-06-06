@@ -37,6 +37,8 @@ else ifeq ($(MCU_TARGET),atmega128)
     ISP_TARGET=m128
 else ifeq ($(MCU_TARGET),atmega2560)
     ISP_TARGET=m2560
+else ifeq ($(MCU_TARGET),atmega2561)
+    ISP_TARGET=m2561
 endif
 
 LDSECTION  = --section-start=.text=$(BOOT_START)
