@@ -1,8 +1,8 @@
 /* ATmegaBOOT -- Serial Bootloader for Atmel megaAVR Controllers
  * -----------------------------------------------------------------------------
  *
- * Release: V1.5
- * Date:    6.6.2016
+ * Release: V1.6
+ * Date:    7.6.2016
  *
  * Tested with: ATmega8, ATmega128, ATmega324P
  * should work with other mega's, see code for details
@@ -11,6 +11,7 @@
  * Modify define BL_RELEASE below to change the new version string and don't forget
  * the Makefile!
  *
+ * V1.6  fixes different name for MCUSR register for 32/128/162
  * V1.5  add "forced enter" mode. add 2561
  * V1.4  fixes of PROGMEM strings above 64k
  * V1.3  fixes for avr-libc 1.7.1
@@ -208,6 +209,13 @@
   #error "error: unknown target!"
 #endif
 
+#if defined(__AVR_ATmega32__) || defined(__AVR_ATmega128__) || defined(__AVR_ATmega162__)
+  #define _MCUSR MCUCSR
+#else
+  #define _MCUSR MCUSR
+#endif
+
+
 /* Macros to access data defined in PROGMEM above 64kB. This macro doesn't work
  * with PSTR() as parameter. It only works with char[]!
  */
@@ -309,7 +317,7 @@ int main(void)
 
     asm volatile("nop\n\t");
 #ifdef HANDLE_WDT_RESET
-    if ( MCUSR & _BV(WDRF) )
+    if ( _MCUSR & _BV(WDRF) )
 	app_start();
 #endif
     wdt_disable();

@@ -5,12 +5,18 @@
 
                   Project: ATmegaBOOT
                    Author: (changes by) J. Desch <github@jdesch.de>
-          Current Release: 1.5
+          Current Release: 1.6
 
 +=========================================================================+
 |                         Copyright (c) J. Desch                          |
 +=========================================================================+
 
+2016/06/07 - jd
+
+ * increased version to 1.6
+ * FIX: while building the bootloader for a project running a Mega128, an error
+   pops up. The Mega32/128/162 use a different name for MCUSR register (MCUCSR).
+ * the bootloader and the "forced mode" is now tested for Mega2561 and Mega128.
 
 2016/06/06 - jd
 
@@ -39,6 +45,9 @@
    I've found the macro FAR(), which restaurates a 17bit address. The drawback
    of the macro is, that is only works with variables. It is not possible to
    pass a PSTR() constant to it. So I've put all messages into variables.
+
+
+---- before hosted at github ----
 
 2012/11/22 - jd		REL_1_3
 
