@@ -42,9 +42,27 @@ line like this:
 $ avrdude -p atmega128 -P /dev/ttyUSB0 -c stk500v1 -b 38400 -U flash:w:foo-1.1.2.hex
 ~~~~
 
-**Tipp:** it is possible to call the bootloader from with your application. To do this,
-use the address defines inside the standard Makefile (it should be there) as byte address.
-Inside the C code, use this define to initialise a function pointer.
+## Enter the bootloader
+
+In most cases, the bootloader pin is used to enter the bootloader. This pin
+must be pressed while power on the MCU. If there is no such pin available, the
+*forced-mode* can be used.
+
+The bootloader can be configured (USE_FORCED_BOOTLOAD_ENTER) to wait 3 seconds
+for a sequence of 5+ consecutive '*' at the UART. If this '*' sequence is
+received, the bootloader starts sending '*' and wait for an empty UART buffer.
+If no more data is fetched, the regular bootloader is entered.
+
+In both cases, the fuses must be configured to enter the bootloader after
+power-up!
+
+
+## Enter the bootloader from within the application
+
+It is possible to call the bootloader from with your application. To
+do this, use the address defined inside the standard Makefile (it should be
+there) as byte address. Inside the C code, use this define to initialise a
+function pointer.
 
 ~~~~
 #ifdef BOOTSTART
@@ -54,7 +72,14 @@ void (*__bootloader)(void) = (void*)BOOTSTART;
 #endif
 ~~~~
 
-**Note:** the bootloader is still active after avrdude has done it's job!
-You must restart your device to enter the application!
+**Note:** This is currently only tested for MCUs with an bootloader below 64kB!
+
+
+## Leaving the bootloader
+
+The bootloader is still active after avrdude has done it's job! You must
+restart your device to enter the application! This can be changed with the
+`WANT_START_APP` compiler flag in `config_*.h`. Enable this feature only if the
+application can run outside it's intended environment.
 
 Have fun.
