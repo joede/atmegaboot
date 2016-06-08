@@ -37,7 +37,7 @@
  * Uncomment this to enable the UNIVERSAL command of the STK500 protocol
  * to return the signature. This method is used by AVRDUDE.
  */
-/* #define WANT_AVRDUDE_SIGNATURE 1 */
+#define WANT_AVRDUDE_SIGNATURE 1
 
 
 /* ===== Configure the RS485 stuff =====
