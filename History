@@ -5,11 +5,16 @@
 
                   Project: ATmegaBOOT
                    Author: (changes by) J. Desch <github@jdesch.de>
-          Current Release: 1.6
+          Current Release: 1.7
 
 +=========================================================================+
 |                         Copyright (c) J. Desch                          |
 +=========================================================================+
+
+2016/06/28 - jd
+
+ * increased version to 1.7
+ * add support for the Mega2561
 
 2016/06/07 - jd
 
