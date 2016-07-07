@@ -3,7 +3,14 @@
 This is an adaption of the bootloader code from http://chip45.com/. I've
 changed the code to make it easier to configure and to match my requirements.
 
-This code is a first try and I don't know if it is the last one. ;-)
+This code is was a first try and --as expected-- it wasn't the last one. ;-)
+ATmegaBOOT is a *stk500v1* based bootloader. This means, it is (and will ever be)
+**limited to 128kB flash size**! As long as the size of the firmware is below
+this limit, the port to *ATmega2560* or *ATmega2561* can be used!
+
+Nevertheless, as a result of this limitation  I've started using a *stk500v2* 
+based bootloader to allow code sizes with more than 128kB.
+See [stk500v2-bootloader](https://github.com/joede/stk500v2-bootloader).
 
 To add support for a new product, copy the `product_TEMPLATE.mak` to a new file
 and replace "TEMPLATE" with a unique shortcut for the products name. Change

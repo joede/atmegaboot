@@ -1,8 +1,8 @@
 /* ATmegaBOOT -- Serial Bootloader for Atmel megaAVR Controllers
  * -----------------------------------------------------------------------------
  *
- * Release: V1.6
- * Date:    7.6.2016
+ * Release: V1.7
+ * Date:    28.6.2016
  *
  * Tested with: ATmega8, ATmega128, ATmega324P
  * should work with other mega's, see code for details
@@ -11,6 +11,7 @@
  * Modify define BL_RELEASE below to change the new version string and don't forget
  * the Makefile!
  *
+ * V1.7  add support for 2560
  * V1.6  fixes different name for MCUSR register for 32/128/162
  * V1.5  add "forced enter" mode. add 2561
  * V1.4  fixes of PROGMEM strings above 64k
@@ -128,12 +129,21 @@
   #define SIG3	0x02
   #define PAGE_SIZE	0x80U	//128 words
   #define BOOTLOADER_ABOVE_64K 1
+  #define HAVE_TWO_UARTS 1
+
+#elif defined __AVR_ATmega2560__
+  #define SIG2	0x98
+  #define SIG3	0x01
+  #define PAGE_SIZE	0x80U	//128 words
+  #define BOOTLOADER_ABOVE_64K 1
+  #define HAVE_TWO_UARTS 1
 
 #elif defined __AVR_ATmega128__
   #define SIG2	0x97
   #define SIG3	0x02
   #define PAGE_SIZE	0x80U	//128 words
   #define BOOTLOADER_ABOVE_64K 1
+  #define HAVE_TWO_UARTS 1
 
 #elif defined __AVR_ATmega64__
   #define SIG2	0x96
@@ -144,11 +154,13 @@
   #define SIG2	0x96
   #define SIG3	0x0A
   #define PAGE_SIZE	0x80U   //128 words
+  #define HAVE_TWO_UARTS 1
 
 #elif defined __AVR_ATmega644__
   #define SIG2	0x96
   #define SIG3	0x09
   #define PAGE_SIZE	0x80U   //128 words
+  #define HAVE_TWO_UARTS 1
 
 #elif defined __AVR_ATmega32__
   #define SIG2	0x95
@@ -159,6 +171,7 @@
   #define SIG2	0x95
   #define SIG3	0x08
   #define PAGE_SIZE	0x40U   //64 words
+  #define HAVE_TWO_UARTS 1
 
 #elif defined __AVR_ATmega16__
   #define SIG2	0x94
@@ -179,11 +192,13 @@
   #define SIG2	0x94
   #define SIG3	0x06
   #define PAGE_SIZE	0x40U	//64 words
+  #define HAVE_TWO_UARTS 1
 
 #elif defined __AVR_ATmega162__
   #define SIG2	0x94
   #define SIG3	0x04
   #define PAGE_SIZE	0x40U	//64 words
+  #define HAVE_TWO_UARTS 1
 
 #elif defined __AVR_ATmega163__
   #define SIG2	0x94
@@ -358,7 +373,7 @@ int main(void)
 #endif
 
     w = (uint16_t)((F_CPU / ((BAUD_RATE)<<3) + 1UL) / 2UL) - 1;
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
+#if defined(HAVE_TWO_UARTS)
     if ( bootuart == 0 ) {
 	UBRR0L = (uint8_t)(w&0x00FF);
 	UBRR0H = (uint8_t)(w>>8);
@@ -591,7 +606,7 @@ int main(void)
 		    /* if ((length.byte[0] & 0x01) == 0x01) length.word++;	//Even up an odd number of bytes */
 		    if ((length.byte[0] & 0x01)) length.word++;	//Even up an odd number of bytes
 		    cli();					//Disable interrupts, just to be sure
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega324P__)
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega324P__)
 		    // Mega xx4 changed EEWE to EEPE
 		    while(bit_is_set(EECR,EEPE));		//Wait for previous EEPROM writes to complete
 #else
@@ -691,7 +706,7 @@ int main(void)
 				 "rjmp	write_page	\n\t"
 				 "block_done:		\n\t"
 				 "clr	__zero_reg__	\n\t"	//restore zero register
-#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega128__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega128__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__)
 				 : "=m" (SPMCSR) : "M" (PAGE_SIZE) : "r0","r16","r17","r24","r25","r28","r29","r30","r31"
 #else
 				 : "=m" (SPMCR) : "M" (PAGE_SIZE) : "r0","r16","r17","r24","r25","r28","r29","r30","r31"
@@ -848,7 +863,7 @@ int main(void)
 				}
 			    }
 			}
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega2561__)
+#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega2561__)
 			/* external bus loop  */
 			else if(ch == 'b') {
 			    putsP(PFSTR(pstr_bus));
@@ -947,7 +962,7 @@ void putch(char ch)
     RS485_PORT |= _BV(RS485_TXON);	     /* enable RS485 transmitter */
 #endif
 
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
+#if defined(HAVE_TWO_UARTS)
     if(bootuart == 0) {
 	while (!(UCSR0A & _BV(UDRE0)));
 	UDR0 = ch;
@@ -995,7 +1010,7 @@ bool haveChar ( char expected )
 {
     uint8_t d, s;
     bool failed = false;
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
+#if defined(HAVE_TWO_UARTS)
     if(bootuart == 0) {
 	if (!(UCSR0A & _BV(RXC0)))
 	    return false;
@@ -1028,7 +1043,7 @@ bool haveChar ( char expected )
 char getch(void)
 {
     uint8_t d, s;
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
+#if defined(HAVE_TWO_UARTS)
     if(bootuart == 0) {
 	while(!(UCSR0A & _BV(RXC0)));
 	s = UCSR0A; d = UDR0;
@@ -1058,7 +1073,7 @@ void getNch(uint8_t count)
 {
     uint8_t i;
     for(i=0;i<count;i++) {
-#if defined(__AVR_ATmega128__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega1284P__)
+#if defined(HAVE_TWO_UARTS)
 	if(bootuart == 0) {
 	    while(!(UCSR0A & _BV(RXC0)));
 	    UDR0;

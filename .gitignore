@@ -9,4 +9,5 @@ contrib
 *.sym
 *.lst
 *.srec
+*.log
 config.h
